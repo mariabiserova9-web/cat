@@ -308,16 +308,16 @@
       transition: opacity .12s ease;
     }
     .preview img{
-  width: min(1100px, 92%);
-  max-width: none;
-  height: auto;
-  border-radius: 22px;
-  border: 1px solid rgba(255,255,255,.18);
-  box-shadow: 0 18px 60px rgba(0,0,0,.45);
-  background: rgba(0,0,0,.25);
-  transform: translateY(8px);
-  transition: transform .14s ease;
-}
+      width:min(360px, 62%);
+      max-width: 420px;
+      height:auto;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: 0 18px 60px rgba(0,0,0,.45);
+      background: rgba(0,0,0,.25);
+      transform: translateY(8px);
+      transition: transform .14s ease;
+    }
     .preview.show{ opacity:1; }
     .preview.show img{ transform: translateY(0); }
 
@@ -637,11 +637,15 @@
 
         <div class="screen" id="screenGood" role="dialog" aria-modal="true" aria-labelledby="goodTitle">
           <div class="card">
-            <h3 id="goodTitle">Teacher: I’m proud of you! 🤗</h3>
-            <p>You worked hard and did everything. The teacher hugs the kitten.</p>
+            <h3 id="goodTitle">You did everything! 😺🎉</h3>
+            <p>The kitten is going home happy.</p>
+            <img src="happycat.jpg" alt="Happy cat" style="width:min(420px,90%);border-radius:18px;border:1px solid rgba(255,255,255,.18);display:block;margin:10px auto 14px;box-shadow:0 18px 60px rgba(0,0,0,.45);" />
             <div class="actions">
-              <button class="linkbtn" type="button" data-close-screen="good">Play again</button>
+              <button class="linkbtn" type="button" id="btnEndGame">End the game</button>
             </div>
+            <p class="modal-note" id="endHint" style="margin-top:10px;display:none;">
+              If this tab doesn’t close automatically, just close it manually.
+            </p>
           </div>
         </div>
 
@@ -670,6 +674,18 @@
     <div class="ticon" id="toastIcon" aria-hidden="true">✨</div>
     <p class="ttext" id="toastText">Saved.</p>
   </div>
+
+  <!-- Message modal (kudos / sad / angry) -->
+  <dialog id="msgModal" aria-labelledby="msgTitle">
+    <div class="modal-head">
+      <h3 class="modal-title" id="msgTitle">Message</h3>
+      <button class="modal-close" id="msgClose" type="button">Close</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-note" id="msgText"></p>
+    </div>
+  </dialog>
+
 
   <script>
     "use strict";
@@ -707,11 +723,11 @@
      * =========================
      */
     const defaultState = () => ({
-      version: 1,
+      version: 2,
       updatedAt: Date.now(),
-      board: { visited: false, completed: false, score: 0, updatedAt: null },
-      tablet:{ visited: false, completed: false, score: 0, updatedAt: null },
-      play:  { visited: false, updatedAt: null }
+      board:  { visited:false, attempted:false, completed:false, score:0, updatedAt:null },
+      tablet: { visited:false, attempted:false, completed:false, score:0, updatedAt:null },
+      play:   { visited:false, attempted:false, updatedAt:null }
     });
 
     function loadState() {
@@ -793,6 +809,23 @@
       toastText: document.getElementById("toastText"),
     };
 
+    // Message modal (kudos / sad / angry)
+    const msg = {
+      modal: document.getElementById("msgModal"),
+      close: document.getElementById("msgClose"),
+      title: document.getElementById("msgTitle"),
+      text:  document.getElementById("msgText"),
+    };
+
+    function showMsg(title, text) {
+      msg.title.textContent = title;
+      msg.text.textContent = text;
+      if (typeof msg.modal.showModal === "function") msg.modal.showModal();
+      else alert(title + "\n\n" + text);
+    }
+    msg.close.addEventListener("click", () => msg.modal.close());
+
+
     let toastTimer = null;
     function showToast(message, kind = "info") {
       // kind: info | ok | warn | bad
@@ -850,8 +883,9 @@
         el.subBoard.textContent = "100/100 — Done";
         setBadge(el.badgeBoard, "100/100 Done", "ok");
       } else {
-        el.subBoard.textContent = `In progress — ${state.board.score || 0}/100`;
-        setBadge(el.badgeBoard, `In progress (${state.board.score || 0}/100)`, "warn");
+        const bScore = state.board.score || 0;
+        el.subBoard.textContent = `Attempt used — ${bScore}/100`;
+        setBadge(el.badgeBoard, `Attempt used (${bScore}/100)`, "bad");
       }
 
       // Tablet status
@@ -862,8 +896,9 @@
         el.subTablet.textContent = "100/100 — Done";
         setBadge(el.badgeTablet, "100/100 Done", "ok");
       } else {
-        el.subTablet.textContent = `In progress — ${state.tablet.score || 0}/100`;
-        setBadge(el.badgeTablet, `In progress (${state.tablet.score || 0}/100)`, "warn");
+        const tScore = state.tablet.score || 0;
+        el.subTablet.textContent = `Attempt used — ${tScore}/100`;
+        setBadge(el.badgeTablet, `Attempt used (${tScore}/100)`, "bad");
       }
 
       // Play status
@@ -875,11 +910,10 @@
         setBadge(el.badgePlay, "Visited", "ok");
       }
 
-      // Disable completed activities (board/tablet only)
-      const boardLocked = state.board.completed && state.board.score === 100;
-      const tabletLocked = state.tablet.completed && state.tablet.score === 100;
-      el.btnBoard.disabled = boardLocked;
-      el.btnTablet.disabled = tabletLocked;
+      // Only one attempt per activity: lock after the first open (attempted)
+      el.btnBoard.disabled = !!state.board.attempted;
+      el.btnTablet.disabled = !!state.tablet.attempted;
+      el.btnPlay.disabled = !!state.play.attempted;
 
       // Leave button
       const leaveAllowed = canLeave();
@@ -950,17 +984,26 @@
     let currentActivity = null;
 
     function openActivity(activity) {
+      // Only one attempt per activity (per browser).
+      if (activity === "board" && state.board.attempted) { showMsg("Already played 🙂", "You can only play this game once."); return; }
+      if (activity === "tablet" && state.tablet.attempted) { showMsg("Already played 🙂", "You can only play this game once."); return; }
+      if (activity === "play" && state.play.attempted) { showMsg("Already played 🙂", "You can only play this game once."); return; }
+
       currentActivity = activity;
 
-      // Mark visited
+      // Mark visited / attempted
+
       if (activity === "board") {
         state.board.visited = true;
+        state.board.attempted = true;
         state.board.updatedAt = Date.now();
       } else if (activity === "tablet") {
         state.tablet.visited = true;
+        state.tablet.attempted = true;
         state.tablet.updatedAt = Date.now();
       } else if (activity === "play") {
         state.play.visited = true;
+        state.play.attempted = true;
         state.play.updatedAt = Date.now();
       }
       saveState();
@@ -1006,8 +1049,14 @@
 
     // ESC closes dialog by default; also ensure iframe is cleared.
     el.gameModal.addEventListener("close", () => {
+      const act = currentActivity;
       el.gameFrame.src = "";
       currentActivity = null;
+
+      // For Play activity we treat "visited once" as success.
+      if (act === "play" && state.play.attempted) {
+        showMsg("Kudos! 😺🎉", "Kudos, you did it!");
+      }
     });
 
     // Handle dialog cancel (Esc)
@@ -1022,24 +1071,28 @@
      * =========================
      */
     el.btnBoard.addEventListener("click", () => {
-      if (el.btnBoard.disabled) {
-        showToast("This activity is already completed (100/100).", "ok");
-        return;
-      }
       openActivity("board");
     });
 
     el.btnTablet.addEventListener("click", () => {
-      if (el.btnTablet.disabled) {
-        showToast("This activity is already completed (100/100).", "ok");
-        return;
-      }
       openActivity("tablet");
     });
 
     el.btnPlay.addEventListener("click", () => {
       openActivity("play");
     });
+
+    // Disabled buttons don't fire click events, so we handle pointerdown to show a message.
+    el.btnBoard.addEventListener("pointerdown", (e) => {
+      if (el.btnBoard.disabled) { e.preventDefault(); showMsg("Already played 🙂", "You can only play this game once."); }
+    });
+    el.btnTablet.addEventListener("pointerdown", (e) => {
+      if (el.btnTablet.disabled) { e.preventDefault(); showMsg("Already played 🙂", "You can only play this game once."); }
+    });
+    el.btnPlay.addEventListener("pointerdown", (e) => {
+      if (el.btnPlay.disabled) { e.preventDefault(); showMsg("Already played 🙂", "You can only play this game once."); }
+    });
+
 
     el.btnLeave.addEventListener("click", () => {
       // If enabled, show GOOD ending screen
@@ -1062,22 +1115,7 @@
     });
 
     function showBlockedLeave() {
-      // Determine bad vs neutral for completeness:
-      // BAD: only played or tried leaving too early without trying board/tablet
-      const triedBoardOrTablet = state.board.visited || state.tablet.visited;
-      const req = requirements();
-
-      if (!triedBoardOrTablet) {
-        // BAD
-        fillReqList(el.badReq, req);
-        showScreen("bad");
-        showToast("You can’t leave yet!", "bad");
-      } else {
-        // NEUTRAL if tried but not perfect
-        fillReqList(el.neutralReq, req);
-        showScreen("neutral");
-        showToast("Almost there — aim for 100/100!", "warn");
-      }
+      showMsg("No, no, no! 😡", "No, no, no, Mister Fish, you won't go to your family.");
     }
 
     function fillReqList(listEl, req) {
@@ -1173,10 +1211,11 @@
         applyUI();
 
         if (score === 100 && completed) {
-          showToast(`${capitalize(data.activity)}: 100/100! Activity locked.`, "ok");
+          showMsg("Kudos! 😺🎉", "Kudos, you did it!");
         } else {
-          showToast(`${capitalize(data.activity)}: ${score}/100 saved. Try for 100/100.`, "warn");
+          showMsg("Oh no… 😿", "Sad, try again.");
         }
+        closeModal();
       }
     });
 
@@ -1188,6 +1227,20 @@
     function capitalize(s) {
       return String(s).charAt(0).toUpperCase() + String(s).slice(1);
     }
+
+
+    /**
+     * =========================
+     * END GAME
+     * =========================
+     */
+    document.addEventListener("click", (e) => {
+      if (e.target && e.target.id === "btnEndGame") {
+        window.close();
+        const hint = document.getElementById("endHint");
+        if (hint) hint.style.display = "block";
+      }
+    });
 
     /**
      * =========================
