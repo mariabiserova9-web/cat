@@ -1,0 +1,1228 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+  <title>After Class Quest</title>
+  <style>
+    :root{
+      --bg1:#0b1220;
+      --bg2:#111a33;
+      --panel: rgba(255,255,255,.10);
+      --panel2: rgba(255,255,255,.14);
+      --stroke: rgba(255,255,255,.18);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.72);
+      --shadow: 0 18px 50px rgba(0,0,0,.35);
+      --radius: 18px;
+      --radius2: 22px;
+      --focus: 0 0 0 3px rgba(255,255,255,.35), 0 0 0 6px rgba(88,191,255,.35);
+      --ok: #35d07f;
+      --warn: #ffd24d;
+      --bad: #ff5a7a;
+      --accent: #58bfff;
+      --accent2:#ff7bd6;
+      --btn: rgba(255,255,255,.14);
+      --btnHover: rgba(255,255,255,.22);
+      --btnActive: rgba(255,255,255,.28);
+      --card: rgba(0,0,0,.35);
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 10% 10%, rgba(255,123,214,.22), transparent 55%),
+        radial-gradient(900px 500px at 90% 25%, rgba(88,191,255,.22), transparent 55%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      overflow-x:hidden;
+    }
+
+    .sr-only{
+      position:absolute !important;
+      width:1px;height:1px;
+      padding:0;margin:-1px;overflow:hidden;
+      clip:rect(0,0,0,0);white-space:nowrap;border:0;
+    }
+
+    .app{
+      min-height:100%;
+      display:grid;
+      grid-template-columns: 280px 1fr;
+      gap:16px;
+      padding:16px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .sidebar{
+      position:sticky;
+      top:16px;
+      align-self:start;
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+      border:1px solid var(--stroke);
+      border-radius: var(--radius2);
+      box-shadow: var(--shadow);
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      overflow:hidden;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 10px 6px;
+      border-radius:16px;
+      background: rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.10);
+    }
+
+    .brand .dot{
+      width:12px;height:12px;border-radius:999px;
+      background: radial-gradient(circle at 30% 30%, #fff, rgba(255,255,255,.25) 35%, rgba(255,255,255,0) 60%),
+                  linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 0 0 3px rgba(88,191,255,.18);
+      flex:0 0 auto;
+    }
+
+    .brand h1{
+      font-size: 14px;
+      line-height:1.2;
+      margin:0;
+      letter-spacing:.2px;
+    }
+    .brand p{
+      margin:0;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .btn{
+      width:100%;
+      text-align:left;
+      background: var(--btn);
+      color:var(--text);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius: 16px;
+      padding:12px 12px;
+      cursor:pointer;
+      transition: transform .08s ease, background .15s ease, border-color .15s ease, opacity .15s ease;
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      user-select:none;
+    }
+
+    .btn:hover{ background: var(--btnHover); border-color: rgba(255,255,255,.22); }
+    .btn:active{ transform: translateY(1px); background: var(--btnActive); }
+    .btn:focus-visible{ outline:none; box-shadow: var(--focus); }
+
+    .btn[disabled]{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+    .btn[disabled]:hover{ background: var(--btn); border-color: rgba(255,255,255,.14); transform:none; }
+
+    .btn .icon{
+      width:34px;height:34px;border-radius:14px;
+      background: rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.12);
+      display:grid;place-items:center;
+      flex:0 0 auto;
+      box-shadow: 0 6px 16px rgba(0,0,0,.25) inset;
+      font-size:18px;
+    }
+    .btn .meta{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      min-width:0;
+    }
+    .btn .title{
+      font-weight:700;
+      font-size:14px;
+      line-height:1.15;
+      margin:0;
+    }
+    .btn .sub{
+      margin:0;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.2;
+    }
+
+    .divider{
+      height:1px;
+      background: rgba(255,255,255,.14);
+      margin:2px 6px;
+    }
+
+    .progress{
+      background: rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+      padding:12px;
+    }
+    .progress h2{
+      margin:0 0 10px;
+      font-size:13px;
+      letter-spacing:.2px;
+    }
+    .progress ul{
+      margin:0;
+      padding:0;
+      list-style:none;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .pitem{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:8px 10px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+      font-size:12px;
+    }
+    .pitem strong{ font-size:12px; }
+    .badge{
+      padding:4px 8px;
+      border-radius:999px;
+      font-weight:700;
+      letter-spacing:.2px;
+      font-size:11px;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.20);
+      white-space:nowrap;
+    }
+    .badge.ok{ background: rgba(53,208,127,.18); border-color: rgba(53,208,127,.35); }
+    .badge.warn{ background: rgba(255,210,77,.18); border-color: rgba(255,210,77,.35); }
+    .badge.bad{ background: rgba(255,90,122,.18); border-color: rgba(255,90,122,.35); }
+
+    main{
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .stage{
+      position:relative;
+      min-height: 520px;
+      border-radius: var(--radius2);
+      border:1px solid rgba(255,255,255,.14);
+      overflow:hidden;
+      box-shadow: var(--shadow);
+      background: #0e1731;
+    }
+
+    .stage::before{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.10), rgba(0,0,0,.45)),
+        radial-gradient(900px 400px at 35% 12%, rgba(255,255,255,.10), transparent 60%),
+        url("class.jpg");
+      background-size: cover;
+      background-position: center;
+      filter: saturate(1.05);
+      transform: scale(1.02);
+    }
+
+    .stage-content{
+      position:relative;
+      z-index:2;
+      height:100%;
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      gap:14px;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .story{
+      max-width: 720px;
+      background: rgba(0,0,0,.35);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius: 18px;
+      padding:12px 14px;
+      backdrop-filter: blur(8px);
+    }
+    .story h2{
+      margin:0 0 6px;
+      font-size:16px;
+      letter-spacing:.2px;
+    }
+    .story p{
+      margin:0;
+      font-size:13px;
+      color: rgba(255,255,255,.84);
+      line-height:1.35;
+    }
+
+    .helper{
+      text-align:right;
+      min-width: 210px;
+      background: rgba(0,0,0,.28);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+      padding:10px 12px;
+      backdrop-filter: blur(8px);
+    }
+    .helper .kpi{
+      font-weight:800;
+      font-size:13px;
+      margin:0 0 4px;
+    }
+    .helper .mini{
+      margin:0;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.25;
+    }
+
+    .preview{
+      position:absolute;
+      inset:0;
+      display:grid;
+      place-items:center;
+      pointer-events:none;
+      opacity:0;
+      transition: opacity .12s ease;
+    }
+    .preview img{
+      width:min(360px, 62%);
+      max-width: 420px;
+      height:auto;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: 0 18px 60px rgba(0,0,0,.45);
+      background: rgba(0,0,0,.25);
+      transform: translateY(8px);
+      transition: transform .14s ease;
+    }
+    .preview.show{ opacity:1; }
+    .preview.show img{ transform: translateY(0); }
+
+    .footer{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 12px;
+      background: rgba(0,0,0,.30);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+      backdrop-filter: blur(8px);
+    }
+    .footer small{
+      color:var(--muted);
+      line-height:1.25;
+    }
+
+    .linkbtn{
+      border:1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.10);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius: 14px;
+      cursor:pointer;
+      font-weight:700;
+      font-size:12px;
+    }
+    .linkbtn:hover{ background: rgba(255,255,255,.16); }
+    .linkbtn:focus-visible{ outline:none; box-shadow: var(--focus); }
+
+    /* Dialog (modal) */
+    dialog{
+      border:none;
+      padding:0;
+      border-radius: 18px;
+      width:min(980px, calc(100vw - 24px));
+      box-shadow: 0 30px 90px rgba(0,0,0,.55);
+      background: rgba(16,20,34,.92);
+      color: var(--text);
+      overflow:hidden;
+    }
+    dialog::backdrop{
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(3px);
+    }
+    .modal-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:12px 14px;
+      border-bottom:1px solid rgba(255,255,255,.12);
+      background: linear-gradient(90deg, rgba(88,191,255,.18), rgba(255,123,214,.14));
+    }
+    .modal-title{
+      margin:0;
+      font-size:14px;
+      font-weight:900;
+      letter-spacing:.2px;
+    }
+    .modal-close{
+      border:1px solid rgba(255,255,255,.22);
+      background: rgba(255,255,255,.12);
+      color:var(--text);
+      padding:8px 10px;
+      border-radius: 12px;
+      cursor:pointer;
+      font-weight:800;
+      font-size:12px;
+    }
+    .modal-close:hover{ background: rgba(255,255,255,.18); }
+    .modal-close:focus-visible{ outline:none; box-shadow: var(--focus); }
+
+    .modal-body{
+      padding:12px;
+      display:grid;
+      grid-template-rows: auto 1fr;
+      gap:10px;
+    }
+    .modal-note{
+      margin:0;
+      font-size:12px;
+      color: var(--muted);
+      line-height:1.3;
+    }
+    .frame-wrap{
+      border:1px solid rgba(255,255,255,.14);
+      border-radius: 16px;
+      overflow:hidden;
+      background: rgba(0,0,0,.25);
+      min-height: 540px;
+    }
+    iframe{
+      width:100%;
+      height: 540px;
+      border:0;
+      display:block;
+      background: #0b0f1f;
+    }
+
+    /* Endings screens */
+    .screen{
+      position:absolute;
+      inset:0;
+      z-index:5;
+      display:none;
+      place-items:center;
+      padding:18px;
+    }
+    .screen.show{ display:grid; }
+    .card{
+      width:min(720px, 100%);
+      background: rgba(0,0,0,.55);
+      border:1px solid rgba(255,255,255,.18);
+      border-radius: 22px;
+      box-shadow: 0 22px 80px rgba(0,0,0,.55);
+      padding:16px 16px 14px;
+      backdrop-filter: blur(8px);
+    }
+    .card h3{
+      margin:0 0 8px;
+      font-size:20px;
+      letter-spacing:.2px;
+    }
+    .card p{
+      margin:0 0 12px;
+      color: rgba(255,255,255,.86);
+      line-height:1.45;
+      font-size:14px;
+    }
+    .card ul{
+      margin: 0 0 12px;
+      padding-left: 18px;
+      color: rgba(255,255,255,.84);
+    }
+    .card .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    /* Toast */
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:18px;
+      transform: translateX(-50%);
+      z-index:9999;
+      max-width:min(780px, calc(100vw - 24px));
+      background: rgba(0,0,0,.72);
+      border:1px solid rgba(255,255,255,.18);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius: 14px;
+      box-shadow: 0 18px 70px rgba(0,0,0,.55);
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .15s ease, transform .15s ease;
+    }
+    .toast.show{
+      opacity:1;
+      pointer-events:auto;
+      transform: translateX(-50%) translateY(0);
+    }
+    .toast .ticon{
+      width:28px;height:28px;border-radius:12px;
+      display:grid;place-items:center;
+      background: rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.14);
+      flex:0 0 auto;
+      font-size:16px;
+    }
+    .toast .ttext{
+      margin:0;
+      font-size:13px;
+      line-height:1.25;
+      color: rgba(255,255,255,.88);
+    }
+
+    @media (max-width: 900px){
+      .app{ grid-template-columns: 1fr; }
+      .sidebar{ position:relative; top:auto; }
+      .stage{ min-height: 520px; }
+      .helper{ display:none; }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      *{ transition:none !important; scroll-behavior:auto !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <aside class="sidebar" aria-label="Actions">
+      <div class="brand" aria-label="Game title">
+        <div class="dot" aria-hidden="true"></div>
+        <div>
+          <h1>After Class Quest</h1>
+          <p>Help the kitten earn a hug.</p>
+        </div>
+      </div>
+
+      <button class="btn" id="btnBoard" type="button" data-activity="board" data-preview="catboard.jpg">
+        <span class="icon" aria-hidden="true">🧑‍🏫</span>
+        <span class="meta">
+          <span class="title">Work at the board</span>
+          <span class="sub" id="subBoard">Not started</span>
+        </span>
+      </button>
+
+      <button class="btn" id="btnTablet" type="button" data-activity="tablet" data-preview="cattablet.jpg">
+        <span class="icon" aria-hidden="true">📱</span>
+        <span class="meta">
+          <span class="title">Work on the tablet</span>
+          <span class="sub" id="subTablet">Not started</span>
+        </span>
+      </button>
+
+      <button class="btn" id="btnPlay" type="button" data-activity="play" data-preview="catplay.jpg">
+        <span class="icon" aria-hidden="true">🎮</span>
+        <span class="meta">
+          <span class="title">Play on the phone</span>
+          <span class="sub" id="subPlay">Not visited</span>
+        </span>
+      </button>
+
+      <div class="divider" role="separator" aria-hidden="true"></div>
+
+      <button class="btn" id="btnLeave" type="button" disabled>
+        <span class="icon" aria-hidden="true">🚪</span>
+        <span class="meta">
+          <span class="title">Leave the classroom</span>
+          <span class="sub" id="subLeave">Finish everything first</span>
+        </span>
+      </button>
+
+      <div class="progress" aria-label="Progress">
+        <h2>Progress</h2>
+        <ul>
+          <li class="pitem">
+            <span><strong>Board</strong></span>
+            <span class="badge warn" id="badgeBoard">Not started</span>
+          </li>
+          <li class="pitem">
+            <span><strong>Tablet</strong></span>
+            <span class="badge warn" id="badgeTablet">Not started</span>
+          </li>
+          <li class="pitem">
+            <span><strong>Play</strong></span>
+            <span class="badge warn" id="badgePlay">Not visited</span>
+          </li>
+        </ul>
+      </div>
+    </aside>
+
+    <main>
+      <section class="stage" aria-label="Classroom scene">
+        <div class="stage-content">
+          <div class="topbar">
+            <div class="story">
+              <h2>The Naughty Kitten Stayed After Class 😼</h2>
+              <p>
+                To leave, you must do all three activities.
+                Get <strong>100/100</strong> on <strong>Board</strong> and <strong>Tablet</strong>, and <strong>visit Play</strong> once.
+              </p>
+            </div>
+            <div class="helper" aria-label="Hint panel">
+              <p class="kpi" id="kpi">0/3 activities done</p>
+              <p class="mini" id="kpiHint">Tip: Hover buttons to see what the kitten is doing.</p>
+            </div>
+          </div>
+
+          <div class="footer" aria-label="Footer">
+            <small>
+              <strong>Teacher’s rule:</strong> No leaving until the work is done.
+              <span id="footerReq"></span>
+            </small>
+            <button class="linkbtn" id="btnReset" type="button">Reset progress</button>
+          </div>
+        </div>
+
+        <!-- Hover preview overlay -->
+        <div class="preview" id="preview" aria-hidden="true">
+          <img id="previewImg" alt="" src="" />
+        </div>
+
+        <!-- Endings (in-page screens) -->
+        <div class="screen" id="screenBad" role="dialog" aria-modal="true" aria-labelledby="badTitle">
+          <div class="card">
+            <h3 id="badTitle">Teacher: Not so fast! ✋</h3>
+            <p>You didn’t work enough. Go try the learning activities first!</p>
+            <p><strong>What you still need:</strong></p>
+            <ul id="badReq"></ul>
+            <div class="actions">
+              <button class="linkbtn" type="button" data-close-screen="bad">Okay</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="screen" id="screenNeutral" role="dialog" aria-modal="true" aria-labelledby="neutralTitle">
+          <div class="card">
+            <h3 id="neutralTitle">Teacher: Good effort 👍</h3>
+            <p>Good effort, but you need to study harder. Try again and aim for 100/100.</p>
+            <p><strong>What you still need:</strong></p>
+            <ul id="neutralReq"></ul>
+            <div class="actions">
+              <button class="linkbtn" type="button" data-close-screen="neutral">I’ll try again</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="screen" id="screenGood" role="dialog" aria-modal="true" aria-labelledby="goodTitle">
+          <div class="card">
+            <h3 id="goodTitle">Teacher: I’m proud of you! 🤗</h3>
+            <p>You worked hard and did everything. The teacher hugs the kitten.</p>
+            <div class="actions">
+              <button class="linkbtn" type="button" data-close-screen="good">Play again</button>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </main>
+  </div>
+
+  <!-- Activity modal -->
+  <dialog id="gameModal" aria-labelledby="modalTitle">
+    <div class="modal-head">
+      <h3 class="modal-title" id="modalTitle">Activity</h3>
+      <button class="modal-close" id="modalClose" type="button">Close</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-note" id="modalNote">
+        Finish the mini-game. It will send your score back automatically.
+      </p>
+      <div class="frame-wrap">
+        <iframe id="gameFrame" title="Mini game" src="" loading="lazy"></iframe>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true">
+    <div class="ticon" id="toastIcon" aria-hidden="true">✨</div>
+    <p class="ttext" id="toastText">Saved.</p>
+  </div>
+
+  <script>
+    "use strict";
+
+    /**
+     * =========================
+     * CONFIG — EDIT HERE
+     * =========================
+     * Change game file paths or asset names below if needed.
+     */
+    const CONFIG = {
+      storageKey: "catQuestState_v1",
+
+      // Game URLs (same-origin files in your GitHub repo)
+      urls: {
+        board: "phonics.html",
+        tablet: "numbers.html",
+        play: "grammar.html",
+      },
+
+      // Background + hover preview images
+      assets: {
+        classBg: "class.jpg",        // Used in CSS (stage background)
+        preview: {
+          board: "catboard.jpg",
+          tablet: "cattablet.jpg",
+          play: "catplay.jpg",
+        }
+      }
+    };
+
+    /**
+     * =========================
+     * STATE
+     * =========================
+     */
+    const defaultState = () => ({
+      version: 1,
+      updatedAt: Date.now(),
+      board: { visited: false, completed: false, score: 0, updatedAt: null },
+      tablet:{ visited: false, completed: false, score: 0, updatedAt: null },
+      play:  { visited: false, updatedAt: null }
+    });
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(CONFIG.storageKey);
+        if (!raw) return defaultState();
+        const parsed = JSON.parse(raw);
+        // Lightweight validation / migration guard
+        if (!parsed || typeof parsed !== "object") return defaultState();
+        return {
+          ...defaultState(),
+          ...parsed,
+          board: { ...defaultState().board, ...(parsed.board || {}) },
+          tablet:{ ...defaultState().tablet,...(parsed.tablet|| {}) },
+          play:  { ...defaultState().play,  ...(parsed.play  || {}) }
+        };
+      } catch {
+        return defaultState();
+      }
+    }
+
+    function saveState() {
+      state.updatedAt = Date.now();
+      localStorage.setItem(CONFIG.storageKey, JSON.stringify(state));
+    }
+
+    function resetState() {
+      localStorage.removeItem(CONFIG.storageKey);
+      state = defaultState();
+      saveState();
+      applyUI();
+    }
+
+    let state = loadState();
+
+    /**
+     * =========================
+     * DOM
+     * =========================
+     */
+    const el = {
+      btnBoard: document.getElementById("btnBoard"),
+      btnTablet: document.getElementById("btnTablet"),
+      btnPlay: document.getElementById("btnPlay"),
+      btnLeave: document.getElementById("btnLeave"),
+
+      subBoard: document.getElementById("subBoard"),
+      subTablet: document.getElementById("subTablet"),
+      subPlay: document.getElementById("subPlay"),
+      subLeave: document.getElementById("subLeave"),
+
+      badgeBoard: document.getElementById("badgeBoard"),
+      badgeTablet: document.getElementById("badgeTablet"),
+      badgePlay: document.getElementById("badgePlay"),
+
+      kpi: document.getElementById("kpi"),
+      kpiHint: document.getElementById("kpiHint"),
+      footerReq: document.getElementById("footerReq"),
+
+      preview: document.getElementById("preview"),
+      previewImg: document.getElementById("previewImg"),
+
+      btnReset: document.getElementById("btnReset"),
+
+      gameModal: document.getElementById("gameModal"),
+      modalTitle: document.getElementById("modalTitle"),
+      modalNote: document.getElementById("modalNote"),
+      modalClose: document.getElementById("modalClose"),
+      gameFrame: document.getElementById("gameFrame"),
+
+      screenBad: document.getElementById("screenBad"),
+      screenNeutral: document.getElementById("screenNeutral"),
+      screenGood: document.getElementById("screenGood"),
+      badReq: document.getElementById("badReq"),
+      neutralReq: document.getElementById("neutralReq"),
+
+      toast: document.getElementById("toast"),
+      toastIcon: document.getElementById("toastIcon"),
+      toastText: document.getElementById("toastText"),
+    };
+
+    let toastTimer = null;
+    function showToast(message, kind = "info") {
+      // kind: info | ok | warn | bad
+      const iconMap = { info:"✨", ok:"✅", warn:"⚠️", bad:"⛔" };
+      el.toastIcon.textContent = iconMap[kind] || "✨";
+      el.toastText.textContent = message;
+
+      el.toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.toast.classList.remove("show"), 2600);
+    }
+
+    /**
+     * =========================
+     * RULES
+     * =========================
+     */
+    function requirements() {
+      const req = [];
+      if (!(state.board.completed && state.board.score === 100)) req.push("Get 100/100 on Work at the board.");
+      if (!(state.tablet.completed && state.tablet.score === 100)) req.push("Get 100/100 on Work on the tablet.");
+      if (!state.play.visited) req.push("Visit Play on the phone at least once.");
+      return req;
+    }
+
+    function canLeave() {
+      return requirements().length === 0;
+    }
+
+    function activityDoneCount() {
+      let done = 0;
+      if (state.board.completed && state.board.score === 100) done++;
+      if (state.tablet.completed && state.tablet.score === 100) done++;
+      if (state.play.visited) done++;
+      return done;
+    }
+
+    /**
+     * =========================
+     * UI UPDATE
+     * =========================
+     */
+    function setBadge(badgeEl, text, kind) {
+      badgeEl.textContent = text;
+      badgeEl.classList.remove("ok","warn","bad");
+      if (kind) badgeEl.classList.add(kind);
+    }
+
+    function applyUI() {
+      // Board status
+      if (!state.board.visited) {
+        el.subBoard.textContent = "Not started";
+        setBadge(el.badgeBoard, "Not started", "warn");
+      } else if (state.board.score === 100 && state.board.completed) {
+        el.subBoard.textContent = "100/100 — Done";
+        setBadge(el.badgeBoard, "100/100 Done", "ok");
+      } else {
+        el.subBoard.textContent = `In progress — ${state.board.score || 0}/100`;
+        setBadge(el.badgeBoard, `In progress (${state.board.score || 0}/100)`, "warn");
+      }
+
+      // Tablet status
+      if (!state.tablet.visited) {
+        el.subTablet.textContent = "Not started";
+        setBadge(el.badgeTablet, "Not started", "warn");
+      } else if (state.tablet.score === 100 && state.tablet.completed) {
+        el.subTablet.textContent = "100/100 — Done";
+        setBadge(el.badgeTablet, "100/100 Done", "ok");
+      } else {
+        el.subTablet.textContent = `In progress — ${state.tablet.score || 0}/100`;
+        setBadge(el.badgeTablet, `In progress (${state.tablet.score || 0}/100)`, "warn");
+      }
+
+      // Play status
+      if (!state.play.visited) {
+        el.subPlay.textContent = "Not visited";
+        setBadge(el.badgePlay, "Not visited", "warn");
+      } else {
+        el.subPlay.textContent = "Visited";
+        setBadge(el.badgePlay, "Visited", "ok");
+      }
+
+      // Disable completed activities (board/tablet only)
+      const boardLocked = state.board.completed && state.board.score === 100;
+      const tabletLocked = state.tablet.completed && state.tablet.score === 100;
+      el.btnBoard.disabled = boardLocked;
+      el.btnTablet.disabled = tabletLocked;
+
+      // Leave button
+      const leaveAllowed = canLeave();
+      el.btnLeave.disabled = !leaveAllowed;
+      el.subLeave.textContent = leaveAllowed ? "Ready to go!" : "Finish everything first";
+
+      // KPI
+      const done = activityDoneCount();
+      el.kpi.textContent = `${done}/3 activities done`;
+      const req = requirements();
+      el.footerReq.textContent = req.length ? ` Remaining: ${req.length}` : " All done!";
+      el.kpiHint.textContent = req.length
+        ? "Tip: Complete Board & Tablet with 100/100, and visit Play once."
+        : "Nice! Now you can leave the classroom.";
+
+      saveState(); // ensure consistency
+    }
+
+    /**
+     * =========================
+     * HOVER PREVIEW
+     * =========================
+     */
+    function showPreview(src, alt) {
+      el.previewImg.src = src;
+      el.previewImg.alt = alt || "";
+      el.preview.classList.add("show");
+    }
+    function hidePreview() {
+      el.preview.classList.remove("show");
+      // Keep src to avoid flicker; harmless.
+    }
+
+    // Attach hover/focus previews for buttons 1–3
+    const previewMap = {
+      board: CONFIG.assets.preview.board,
+      tablet: CONFIG.assets.preview.tablet,
+      play: CONFIG.assets.preview.play
+    };
+
+    function wirePreview(buttonEl) {
+      const activity = buttonEl.dataset.activity;
+      const src = previewMap[activity];
+      const labelMap = {
+        board: "Kitten at the board",
+        tablet:"Kitten with a tablet",
+        play:  "Kitten playing on the phone"
+      };
+
+      const onEnter = () => showPreview(src, labelMap[activity]);
+      const onLeave = () => hidePreview();
+
+      buttonEl.addEventListener("mouseenter", onEnter);
+      buttonEl.addEventListener("mouseleave", onLeave);
+      buttonEl.addEventListener("focus", onEnter);
+      buttonEl.addEventListener("blur", onLeave);
+    }
+
+    wirePreview(el.btnBoard);
+    wirePreview(el.btnTablet);
+    wirePreview(el.btnPlay);
+
+    /**
+     * =========================
+     * MODAL + IFRAME
+     * =========================
+     */
+    let currentActivity = null;
+
+    function openActivity(activity) {
+      currentActivity = activity;
+
+      // Mark visited
+      if (activity === "board") {
+        state.board.visited = true;
+        state.board.updatedAt = Date.now();
+      } else if (activity === "tablet") {
+        state.tablet.visited = true;
+        state.tablet.updatedAt = Date.now();
+      } else if (activity === "play") {
+        state.play.visited = true;
+        state.play.updatedAt = Date.now();
+      }
+      saveState();
+      applyUI();
+
+      // Title and note
+      const titleMap = {
+        board: "Work at the board",
+        tablet:"Work on the tablet",
+        play:  "Play on the phone"
+      };
+      el.modalTitle.textContent = titleMap[activity] || "Activity";
+
+      if (activity === "play") {
+        el.modalNote.textContent = "Have fun! Visiting this activity is required once.";
+      } else {
+        el.modalNote.textContent = "Finish the mini-game. It will send your score back automatically.";
+      }
+
+      // Lazy-load iframe src on open
+      el.gameFrame.src = CONFIG.urls[activity];
+
+      // Open dialog (with fallback)
+      if (typeof el.gameModal.showModal === "function") {
+        el.gameModal.showModal();
+      } else {
+        // Very old browsers fallback: open in new tab
+        window.open(CONFIG.urls[activity], "_blank", "noopener,noreferrer");
+        showToast("Your browser doesn't support modals. Opened the game in a new tab.", "warn");
+      }
+
+      showToast("Progress saved.", "ok");
+    }
+
+    function closeModal() {
+      if (el.gameModal.open) el.gameModal.close();
+      // Clear iframe src on close (important!)
+      el.gameFrame.src = "";
+      currentActivity = null;
+    }
+
+    el.modalClose.addEventListener("click", closeModal);
+
+    // ESC closes dialog by default; also ensure iframe is cleared.
+    el.gameModal.addEventListener("close", () => {
+      el.gameFrame.src = "";
+      currentActivity = null;
+    });
+
+    // Handle dialog cancel (Esc)
+    el.gameModal.addEventListener("cancel", (e) => {
+      // Allow close, but ensure cleanup.
+      // No preventDefault here.
+    });
+
+    /**
+     * =========================
+     * BUTTON ACTIONS
+     * =========================
+     */
+    el.btnBoard.addEventListener("click", () => {
+      if (el.btnBoard.disabled) {
+        showToast("This activity is already completed (100/100).", "ok");
+        return;
+      }
+      openActivity("board");
+    });
+
+    el.btnTablet.addEventListener("click", () => {
+      if (el.btnTablet.disabled) {
+        showToast("This activity is already completed (100/100).", "ok");
+        return;
+      }
+      openActivity("tablet");
+    });
+
+    el.btnPlay.addEventListener("click", () => {
+      openActivity("play");
+    });
+
+    el.btnLeave.addEventListener("click", () => {
+      // If enabled, show GOOD ending screen
+      if (!canLeave()) {
+        // Shouldn't happen because button is disabled, but keep safe
+        showBlockedLeave();
+        return;
+      }
+      showScreen("good");
+      showToast("You can leave now. Great job!", "ok");
+    });
+
+    // If user tries to click disabled Leave, we show hints (via pointer events workaround)
+    // Disabled buttons don't fire click events, so we add a wrapper listener:
+    el.btnLeave.addEventListener("pointerdown", (e) => {
+      if (el.btnLeave.disabled) {
+        e.preventDefault();
+        showBlockedLeave();
+      }
+    });
+
+    function showBlockedLeave() {
+      // Determine bad vs neutral for completeness:
+      // BAD: only played or tried leaving too early without trying board/tablet
+      const triedBoardOrTablet = state.board.visited || state.tablet.visited;
+      const req = requirements();
+
+      if (!triedBoardOrTablet) {
+        // BAD
+        fillReqList(el.badReq, req);
+        showScreen("bad");
+        showToast("You can’t leave yet!", "bad");
+      } else {
+        // NEUTRAL if tried but not perfect
+        fillReqList(el.neutralReq, req);
+        showScreen("neutral");
+        showToast("Almost there — aim for 100/100!", "warn");
+      }
+    }
+
+    function fillReqList(listEl, req) {
+      listEl.innerHTML = "";
+      req.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        listEl.appendChild(li);
+      });
+    }
+
+    function showScreen(which) {
+      // hide all
+      el.screenBad.classList.remove("show");
+      el.screenNeutral.classList.remove("show");
+      el.screenGood.classList.remove("show");
+
+      if (which === "bad") el.screenBad.classList.add("show");
+      if (which === "neutral") el.screenNeutral.classList.add("show");
+      if (which === "good") el.screenGood.classList.add("show");
+
+      // Move focus to first button inside screen for accessibility
+      const screen = which === "bad" ? el.screenBad : which === "neutral" ? el.screenNeutral : el.screenGood;
+      const btn = screen.querySelector("button");
+      if (btn) btn.focus({ preventScroll: true });
+    }
+
+    function closeScreen(which) {
+      if (which === "bad") el.screenBad.classList.remove("show");
+      if (which === "neutral") el.screenNeutral.classList.remove("show");
+      if (which === "good") el.screenGood.classList.remove("show");
+    }
+
+    // Close screens
+    document.querySelectorAll("[data-close-screen]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const which = btn.getAttribute("data-close-screen");
+        closeScreen(which);
+        // If good ending closed, user may want to replay: keep progress unless reset.
+      });
+    });
+
+    // Close screens on backdrop click (optional, safe)
+    [el.screenBad, el.screenNeutral, el.screenGood].forEach(screen => {
+      screen.addEventListener("click", (e) => {
+        if (e.target === screen) screen.classList.remove("show");
+      });
+    });
+
+    /**
+     * =========================
+     * RESET
+     * =========================
+     */
+    el.btnReset.addEventListener("click", () => {
+      const ok = confirm("Reset all progress? This cannot be undone.");
+      if (!ok) return;
+      resetState();
+      closeModal();
+      closeScreen("bad"); closeScreen("neutral"); closeScreen("good");
+      showToast("Progress reset.", "info");
+    });
+
+    /**
+     * =========================
+     * RECEIVE SCORES via postMessage
+     * =========================
+     * Expected payload:
+     * { type:"GAME_RESULT", activity:"board"|"tablet", score:0-100, completed:true }
+     */
+    window.addEventListener("message", (event) => {
+      // If your games are same-origin, you can optionally check event.origin.
+      const data = event.data;
+      if (!data || typeof data !== "object") return;
+
+      if (data.type === "GAME_RESULT" && (data.activity === "board" || data.activity === "tablet")) {
+        const score = clampInt(data.score, 0, 100);
+        const completed = !!data.completed;
+
+        if (data.activity === "board") {
+          state.board.visited = true;
+          state.board.score = score;
+          state.board.completed = completed;
+          state.board.updatedAt = Date.now();
+        } else {
+          state.tablet.visited = true;
+          state.tablet.score = score;
+          state.tablet.completed = completed;
+          state.tablet.updatedAt = Date.now();
+        }
+
+        saveState();
+        applyUI();
+
+        if (score === 100 && completed) {
+          showToast(`${capitalize(data.activity)}: 100/100! Activity locked.`, "ok");
+        } else {
+          showToast(`${capitalize(data.activity)}: ${score}/100 saved. Try for 100/100.`, "warn");
+        }
+      }
+    });
+
+    function clampInt(n, min, max) {
+      const x = Number(n);
+      if (!Number.isFinite(x)) return min;
+      return Math.max(min, Math.min(max, Math.round(x)));
+    }
+    function capitalize(s) {
+      return String(s).charAt(0).toUpperCase() + String(s).slice(1);
+    }
+
+    /**
+     * =========================
+     * INITIALIZE
+     * =========================
+     */
+    // Ensure state exists
+    saveState();
+    applyUI();
+
+    // Friendly startup hint
+    if (!state.board.visited && !state.tablet.visited && !state.play.visited) {
+      showToast("Tip: Hover buttons to preview the kitten. Click to start!", "info");
+    }
+  </script>
+
+  <!--
+    =========================
+    IMPORTANT NOTES FOR YOU
+    =========================
+    1) Put these files in the same GitHub repo folder:
+       - index.html
+       - class.jpg
+       - catboard.jpg
+       - cattablet.jpg
+       - catplay.jpg
+       - phonics.html
+       - numbers.html
+       - grammar.html
+
+    2) Your mini-games must send results like this from inside their JS:
+       window.parent.postMessage({ type:"GAME_RESULT", activity:"board", score:100, completed:true }, "*");
+
+       For tablet:
+       window.parent.postMessage({ type:"GAME_RESULT", activity:"tablet", score:100, completed:true }, "*");
+  -->
+</body>
+</html>
