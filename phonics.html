@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pets Memory — 2 Players</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg: #f9fafb;
+      --primary: #60a5fa;
+      --primary-dark: #2563eb;
+      --accent: #fbbf24;
+      --card-back: #e5e7eb;
+      --card-front: #ffffff;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --danger: #ef4444;
+      --success: #16a34a;
+      --shadow-soft: 0 10px 25px rgba(15, 23, 42, 0.08);
+      --radius-lg: 18px;
+      --radius-xl: 24px;
+      --transition-fast: 0.2s ease;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #dbeafe 0, #f9fafb 50%, #fee2e2 100%);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .game-wrapper {
+      max-width: 1100px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 28px;
+      box-shadow: var(--shadow-soft);
+      padding: 20px 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    header {
+      text-align: center;
+      padding-bottom: 4px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 3vw, 2.4rem);
+      letter-spacing: 0.03em;
+    }
+
+    header p {
+      margin: 4px 0 0;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .top-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #dbeafe, #fee2e2);
+    }
+
+    .scores {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.95rem;
+    }
+
+    .score-badge {
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .score-badge span.label {
+      font-weight: 600;
+    }
+
+    .score-badge span.value {
+      font-weight: 700;
+      color: var(--primary-dark);
+    }
+
+    .turn-indicator {
+      padding: 6px 16px;
+      border-radius: 999px;
+      background: #111827;
+      color: #f9fafb;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .turn-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .board-container {
+      display: flex;
+      justify-content: center;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(60px, 110px));
+      gap: 10px;
+      justify-content: center;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .card {
+      position: relative;
+      width: 100%;
+      padding-top: 100%; /* square */
+      perspective: 900px;
+      cursor: pointer;
+    }
+
+    .card-inner {
+      position: absolute;
+      inset: 0;
+      transition: transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+      transform-style: preserve-3d;
+    }
+
+    .card.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+    }
+
+    .card-back {
+      background: radial-gradient(circle at 20% 20%, #bfdbfe, #93c5fd);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 1.2rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .card-front {
+      background: var(--card-front);
+      transform: rotateY(180deg);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 6px;
+    }
+
+    .animal-emoji {
+      font-size: clamp(2.0rem, 3vw, 2.6rem);
+    }
+
+    .animal-name {
+      font-size: 0.8rem;
+      text-transform: capitalize;
+      color: var(--text-muted);
+    }
+
+    .card.matched .card-inner {
+      transform: rotateY(180deg) scale(0.97);
+    }
+
+    .card.matched .card-front {
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.6), 0 8px 18px rgba(15, 23, 42, 0.08);
+      border: 2px solid #22c55e;
+    }
+
+    .card.disabled {
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 320px;
+      margin: 0 auto;
+    }
+
+    .panel {
+      background: #f9fafb;
+      border-radius: 18px;
+      padding: 10px 12px;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .panel h3 {
+      margin: 0 0 4px;
+      font-size: 0.95rem;
+      color: var(--text-main);
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 4px;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 8px 16px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    button:focus-visible {
+      outline: 2px solid var(--primary-dark);
+      outline-offset: 2px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+    }
+
+    .btn-secondary {
+      background: #ffffff;
+      color: var(--text-main);
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+    }
+
+    .btn-secondary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px dashed #d1d5db;
+    }
+
+    .btn-ghost:hover {
+      background: #f3f4f6;
+      color: var(--text-main);
+    }
+
+    footer {
+      margin-top: 4px;
+      text-align: center;
+    }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.4);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal {
+      background: #ffffff;
+      border-radius: var(--radius-xl);
+      padding: 18px 18px 16px;
+      width: min(420px, 92vw);
+      box-shadow: 0 20px 45px rgba(15, 23, 42, 0.35);
+      position: relative;
+    }
+
+    .modal h2 {
+      margin: 0 0 6px;
+      font-size: 1.15rem;
+    }
+
+    .modal p {
+      margin: 4px 0 6px;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: transparent;
+      border-radius: 999px;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      line-height: 1;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .modal-close:hover {
+      background: #f3f4f6;
+      color: var(--text-main);
+    }
+
+    .quiz-options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin: 8px 0 6px;
+    }
+
+    .quiz-btn {
+      justify-content: center;
+    }
+
+    .quiz-feedback {
+      font-size: 0.9rem;
+      margin-top: 2px;
+      min-height: 1.2em;
+    }
+
+    .quiz-feedback.correct {
+      color: var(--success);
+    }
+
+    .quiz-feedback.wrong {
+      color: var(--danger);
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 820px) {
+      main {
+        gap: 16px;
+      }
+      .game-wrapper {
+        padding: 16px 14px 18px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .top-bar {
+        border-radius: 18px;
+      }
+      .board {
+        max-width: 420px;
+        gap: 8px;
+      }
+      .sidebar {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="game-wrapper">
+  <header>
+    <h1>Pets Memory — 2 Players</h1>
+    <p>Match pairs, answer the quiz to score!</p>
+  </header>
+
+  <div class="top-bar" aria-label="Score and current turn">
+    <div class="scores">
+      <div class="score-badge" aria-label="Player 1 score">
+        <span class="label">Player 1</span>
+        <span class="value" id="scoreP1">0</span>
+      </div>
+      <div class="score-badge" aria-label="Player 2 score">
+        <span class="label">Player 2</span>
+        <span class="value" id="scoreP2">0</span>
+      </div>
+    </div>
+    <div class="turn-indicator" id="turnIndicator" aria-live="polite">
+      <span class="turn-dot"></span>
+      <span id="turnText">Player 1’s turn</span>
+    </div>
+  </div>
+
+  <main>
+    <section class="board-container" aria-label="Memory cards">
+      <div class="board" id="board"></div>
+    </section>
+
+    <aside class="sidebar">
+      <div class="panel">
+        <h3>How to play</h3>
+        <p>
+          Players take turns. Flip two cards. If the animals match, answer the
+          <strong>have got / has got</strong> quiz.
+          A correct answer gives you <strong>+1 point</strong> and you play again.
+          A wrong answer passes the turn to the other player.
+        </p>
+      </div>
+      <div class="panel">
+        <h3>Grammar focus</h3>
+        <p>
+          Use: <strong>have / has / haven’t / hasn’t got</strong><br>
+          Examples:<br>
+          • <em>Have you got a dog?</em><br>
+          • <em>She has got a hamster.</em><br>
+          • <em>He hasn’t got a turtle.</em>
+        </p>
+      </div>
+      <div class="buttons" aria-label="Game controls">
+        <button class="btn-primary" id="newGameBtn" aria-label="Start a new game">
+          🔄 New Game
+        </button>
+        <button class="btn-secondary" id="passTurnBtn" aria-label="Pass your turn to the other player">
+          🔁 Pass Turn
+        </button>
+        <button class="btn-ghost" id="helpBtn" aria-label="Show the rules">
+          ❓ Help
+        </button>
+      </div>
+    </aside>
+  </main>
+
+  <footer>
+    <span class="sr-only">All modals can be closed with the Escape key.</span>
+  </footer>
+
+  <!-- Live region for extra announcements -->
+  <div class="sr-only" aria-live="polite" id="liveRegion"></div>
+
+  <!-- Quiz Modal -->
+  <div class="modal-backdrop" id="quizModalBackdrop">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="quizTitle">
+      <button class="modal-close" type="button" id="quizCloseBtn" aria-label="Close quiz (no answer)">
+        &times;
+      </button>
+      <h2 id="quizTitle">Quick Quiz</h2>
+      <p>Choose the best option:</p>
+      <p id="quizQuestion" style="font-weight:600;"></p>
+      <div class="quiz-options" id="quizOptions"></div>
+      <div id="quizFeedback" class="quiz-feedback" aria-live="polite"></div>
+      <p style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">
+        Tip: Think about <em>have got</em> vs <em>has got</em>.
+      </p>
+    </div>
+  </div>
+
+  <!-- Help Modal -->
+  <div class="modal-backdrop closable" id="helpModalBackdrop">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+      <button class="modal-close" type="button" id="helpCloseBtn" aria-label="Close help">
+        &times;
+      </button>
+      <h2 id="helpTitle">How to play “Pets Memory”</h2>
+      <p>
+        1. Two players take turns to flip <strong>two cards</strong>.<br>
+        2. If the animals are different, the cards flip back and it’s the other player’s turn.<br>
+        3. If the animals match, a <strong>have got / has got</strong> quiz appears.<br>
+        4. Choose the correct option:
+        <strong>have / has / haven’t / hasn’t</strong>.<br>
+        5. Correct answer = <strong>+1 point</strong> and you play again.<br>
+        6. Wrong answer = no points and the other player plays.<br>
+        7. When all pairs are found, the player with more points wins!
+      </p>
+      <p style="font-size:0.85rem;color:var(--text-muted);">
+        Keyboard: Use <strong>Tab</strong> to move between buttons and
+        <strong>Enter</strong> to activate. Press <strong>Esc</strong> to close this window.
+      </p>
+    </div>
+  </div>
+
+  <!-- Winner Modal -->
+  <div class="modal-backdrop closable" id="winnerModalBackdrop">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="winnerTitle">
+      <button class="modal-close" type="button" id="winnerCloseBtn" aria-label="Close winner message">
+        &times;
+      </button>
+      <h2 id="winnerTitle">Game Over!</h2>
+      <p id="winnerText"></p>
+      <div class="buttons" style="margin-top:8px;">
+        <button class="btn-primary" id="playAgainBtn">Play again</button>
+        <button class="btn-secondary" id="closeWinnerBtn">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // --- Game data ---------------------------------------------------------
+
+  const animals = [
+    // You can replace emoji with Wikimedia image URLs in the 'emoji' field if you like.
+    { name: 'turtle', emoji: '🐢' },
+    { name: 'parrot', emoji: '🦜' },
+    { name: 'fish', emoji: '🐟' },
+    { name: 'hamster', emoji: '🐹' },
+    { name: 'dog', emoji: '🐶' },
+    { name: 'horse', emoji: '🐴' },
+    { name: 'rat', emoji: '🐀' },
+    { name: 'mouse', emoji: '🐭' }
+  ];
+
+  // Quiz questions: have / has / haven’t / hasn’t
+  const quizQuestions = [
+    { text: '____ you got a pet?', correct: 'have' },
+    { text: 'They __ got 2 birds.', correct: 'have' },
+    { text: 'Boris ___ got a turtle, but he has got a dog.', correct: 'hasn\'t' },
+    { text: '____ they got a big house.', correct: 'Have' },
+    { text: 'She ___ got a hamster.', correct: 'has' },
+    { text: 'We ___ got any fish at home.', correct: 'haven\'t' },
+    { text: 'My friends ___ got three dogs.', correct: 'have' },
+    { text: 'Tom ___ got a parrot.', correct: 'has' },
+    { text: 'I ___ got a mouse in my room!', correct: 'have' },
+    { text: 'Our neighbours ___ got a horse.', correct: 'have' },
+    { text: 'Lisa and Ben ___ got two rats.', correct: 'have' },
+    { text: 'Dad ___ got time to walk the dog today.', correct: 'hasn\'t' },
+    { text: 'The children ___ got many pets.', correct: 'have' },
+    { text: 'It ___ got a long tail.', correct: 'has' },
+    { text: 'My sister ___ got a new puppy.', correct: 'has' }
+  ];
+
+  const quizOptionsAll = ['have', 'has', 'haven\'t', 'hasn\'t'];
+
+  // --- State -------------------------------------------------------------
+
+  let cards = [];
+  let firstCard = null;
+  let secondCard = null;
+  let boardLocked = false;
+  let currentPlayer = 1;
+  let scores = { 1: 0, 2: 0 };
+  let matchedPairs = 0;
+  let usedQuizIndices = [];
+
+  // --- DOM references ----------------------------------------------------
+
+  const boardEl = document.getElementById('board');
+  const scoreP1El = document.getElementById('scoreP1');
+  const scoreP2El = document.getElementById('scoreP2');
+  const turnTextEl = document.getElementById('turnText');
+  const liveRegionEl = document.getElementById('liveRegion');
+
+  const newGameBtn = document.getElementById('newGameBtn');
+  const passTurnBtn = document.getElementById('passTurnBtn');
+  const helpBtn = document.getElementById('helpBtn');
+
+  const quizModalBackdrop = document.getElementById('quizModalBackdrop');
+  const quizQuestionEl = document.getElementById('quizQuestion');
+  const quizOptionsEl = document.getElementById('quizOptions');
+  const quizFeedbackEl = document.getElementById('quizFeedback');
+  const quizCloseBtn = document.getElementById('quizCloseBtn');
+
+  const helpModalBackdrop = document.getElementById('helpModalBackdrop');
+  const helpCloseBtn = document.getElementById('helpCloseBtn');
+
+  const winnerModalBackdrop = document.getElementById('winnerModalBackdrop');
+  const winnerTextEl = document.getElementById('winnerText');
+  const winnerCloseBtn = document.getElementById('winnerCloseBtn');
+  const playAgainBtn = document.getElementById('playAgainBtn');
+  const closeWinnerBtn = document.getElementById('closeWinnerBtn');
+
+  // --- Utility functions -------------------------------------------------
+
+  function shuffleArray(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function updateScoresAndTurn() {
+    scoreP1El.textContent = scores[1];
+    scoreP2El.textContent = scores[2];
+    const text = currentPlayer === 1 ? 'Player 1’s turn' : 'Player 2’s turn';
+    turnTextEl.textContent = text;
+    liveRegionEl.textContent = text;
+  }
+
+  function resetSelection() {
+    if (firstCard) {
+      firstCard.el.classList.remove('flipped');
+    }
+    if (secondCard) {
+      secondCard.el.classList.remove('flipped');
+    }
+    firstCard = null;
+    secondCard = null;
+  }
+
+  function switchPlayer() {
+    currentPlayer = currentPlayer === 1 ? 2 : 1;
+    updateScoresAndTurn();
+  }
+
+  function allPairsMatched() {
+    return matchedPairs === animals.length;
+  }
+
+  // --- Board creation ----------------------------------------------------
+
+  function createBoard() {
+    boardEl.innerHTML = '';
+    cards = [];
+    matchedPairs = 0;
+    firstCard = null;
+    secondCard = null;
+    boardLocked = false;
+
+    // Duplicate animals to make pairs
+    const pairAnimals = animals.concat(animals);
+    const shuffled = shuffleArray(pairAnimals);
+
+    shuffled.forEach((animal, index) => {
+      const cardEl = document.createElement('button');
+      cardEl.className = 'card';
+      cardEl.setAttribute('type', 'button');
+      cardEl.setAttribute('aria-label', `Card ${index + 1}, hidden`);
+      cardEl.dataset.index = String(index);
+
+      const innerEl = document.createElement('div');
+      innerEl.className = 'card-inner';
+
+      const backEl = document.createElement('div');
+      backEl.className = 'card-face card-back';
+      backEl.textContent = '?';
+
+      const frontEl = document.createElement('div');
+      frontEl.className = 'card-face card-front';
+
+      const emojiEl = document.createElement('div');
+      emojiEl.className = 'animal-emoji';
+      emojiEl.textContent = animal.emoji;
+
+      const nameEl = document.createElement('div');
+      nameEl.className = 'animal-name';
+      nameEl.textContent = animal.name;
+
+      frontEl.appendChild(emojiEl);
+      frontEl.appendChild(nameEl);
+
+      innerEl.appendChild(backEl);
+      innerEl.appendChild(frontEl);
+      cardEl.appendChild(innerEl);
+
+      boardEl.appendChild(cardEl);
+
+      cards.push({
+        index,
+        animal: animal.name,
+        el: cardEl,
+        matched: false
+      });
+
+      cardEl.addEventListener('click', () => handleCardClick(index));
+    });
+  }
+
+  // --- Card click logic --------------------------------------------------
+
+  function handleCardClick(index) {
+    if (boardLocked) return;
+
+    const card = cards[index];
+    if (!card || card.matched) return;
+
+    if (firstCard && firstCard.index === index) return;
+
+    card.el.classList.add('flipped');
+
+    if (!firstCard) {
+      firstCard = card;
+      return;
+    }
+
+    secondCard = card;
+    boardLocked = true;
+
+    if (firstCard.animal === secondCard.animal) {
+      // Match found
+      handleMatch();
+    } else {
+      // Not a match
+      setTimeout(() => {
+        resetSelection();
+        boardLocked = false;
+        switchPlayer();
+      }, 700);
+    }
+  }
+
+  function handleMatch() {
+    firstCard.matched = true;
+    secondCard.matched = true;
+    firstCard.el.classList.add('matched', 'disabled');
+    secondCard.el.classList.add('matched', 'disabled');
+
+    matchedPairs++;
+    announce(`Match! ${firstCard.animal} pair found.`);
+
+    // Show quiz for point
+    showQuizModal(() => {
+      // after quiz closes (callback used only when game ended)
+    });
+
+    // Keep cards flipped and clear selection
+    firstCard = null;
+    secondCard = null;
+  }
+
+  // --- Quiz modal --------------------------------------------------------
+
+  function getNextQuizIndex() {
+    if (usedQuizIndices.length === quizQuestions.length) {
+      usedQuizIndices = [];
+    }
+    let idx;
+    do {
+      idx = Math.floor(Math.random() * quizQuestions.length);
+    } while (usedQuizIndices.includes(idx));
+    usedQuizIndices.push(idx);
+    return idx;
+  }
+
+  function openQuizModal() {
+    quizModalBackdrop.classList.add('open');
+    quizFeedbackEl.textContent = '';
+    quizFeedbackEl.classList.remove('correct', 'wrong');
+    quizCloseBtn.focus();
+  }
+
+  function closeQuizModal(noSwitch) {
+    quizModalBackdrop.classList.remove('open');
+    // If the quiz is closed without a correct answer, treat as wrong and switch player (unless noSwitch)
+    if (!noSwitch) {
+      switchPlayer();
+    }
+    boardLocked = false;
+  }
+
+  function showQuizModal() {
+    boardLocked = true;
+    const quizIndex = getNextQuizIndex();
+    const q = quizQuestions[quizIndex];
+
+    quizQuestionEl.textContent = q.text;
+
+    // Build options
+    quizOptionsEl.innerHTML = '';
+    const options = shuffleArray(quizOptionsAll.slice());
+    options.forEach(optionText => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn-secondary quiz-btn';
+      btn.textContent = optionText;
+      btn.setAttribute('aria-label', optionText);
+
+      btn.addEventListener('click', () => {
+        handleQuizAnswer(optionText, q.correct);
+      });
+
+      quizOptionsEl.appendChild(btn);
+    });
+
+    openQuizModal();
+  }
+
+  function handleQuizAnswer(selected, correct) {
+    if (selected === correct) {
+      quizFeedbackEl.textContent = 'Correct! You get 1 point and play again.';
+      quizFeedbackEl.classList.remove('wrong');
+      quizFeedbackEl.classList.add('correct');
+      scores[currentPlayer]++;
+      updateScoresAndTurn();
+      announce(`Player ${currentPlayer} answered correctly and scored 1 point.`);
+
+      setTimeout(() => {
+        quizModalBackdrop.classList.remove('open');
+        boardLocked = false;
+        quizFeedbackEl.textContent = '';
+        quizFeedbackEl.classList.remove('correct');
+
+        if (allPairsMatched()) {
+          showWinnerModal();
+        }
+      }, 800);
+    } else {
+      quizFeedbackEl.textContent = 'Not quite. No points this time. Next player!';
+      quizFeedbackEl.classList.remove('correct');
+      quizFeedbackEl.classList.add('wrong');
+      announce(`Player ${currentPlayer} answered incorrectly. Switching players.`);
+
+      setTimeout(() => {
+        quizModalBackdrop.classList.remove('open');
+        quizFeedbackEl.textContent = '';
+        quizFeedbackEl.classList.remove('wrong');
+        boardLocked = false;
+        switchPlayer();
+        if (allPairsMatched()) {
+          showWinnerModal();
+        }
+      }, 900);
+    }
+  }
+
+  // If user closes quiz via X or ESC, treat as wrong (switch player)
+  quizCloseBtn.addEventListener('click', () => {
+    closeQuizModal(false);
+  });
+
+  // --- Help modal --------------------------------------------------------
+
+  function openHelpModal() {
+    helpModalBackdrop.classList.add('open');
+    helpCloseBtn.focus();
+  }
+
+  function closeHelpModal() {
+    helpModalBackdrop.classList.remove('open');
+  }
+
+  helpBtn.addEventListener('click', openHelpModal);
+  helpCloseBtn.addEventListener('click', closeHelpModal);
+
+  // --- Winner modal ------------------------------------------------------
+
+  function showWinnerModal() {
+    boardLocked = true;
+    let text;
+    if (scores[1] > scores[2]) {
+      text = `Player 1 wins with ${scores[1]} point(s)! Player 2 has ${scores[2]}.`;
+    } else if (scores[2] > scores[1]) {
+      text = `Player 2 wins with ${scores[2]} point(s)! Player 1 has ${scores[1]}.`;
+    } else {
+      text = `It’s a draw! Both players have ${scores[1]} point(s).`;
+    }
+    winnerTextEl.textContent = text;
+    winnerModalBackdrop.classList.add('open');
+    playAgainBtn.focus();
+    announce('Game over. ' + text);
+  }
+
+  function closeWinnerModal() {
+    winnerModalBackdrop.classList.remove('open');
+    boardLocked = false;
+  }
+
+  winnerCloseBtn.addEventListener('click', closeWinnerModal);
+  closeWinnerBtn.addEventListener('click', closeWinnerModal);
+
+  playAgainBtn.addEventListener('click', () => {
+    closeWinnerModal();
+    startNewGame();
+  });
+
+  // --- New game & pass turn ----------------------------------------------
+
+  function startNewGame() {
+    scores = { 1: 0, 2: 0 };
+    currentPlayer = 1;
+    matchedPairs = 0;
+    usedQuizIndices = [];
+    updateScoresAndTurn();
+    createBoard();
+  }
+
+  newGameBtn.addEventListener('click', () => {
+    startNewGame();
+  });
+
+  passTurnBtn.addEventListener('click', () => {
+    // If a card is flipped but pair not finished yet, reset that flipped card
+    if (firstCard && !secondCard) {
+      firstCard.el.classList.remove('flipped');
+      firstCard = null;
+    }
+    switchPlayer();
+  });
+
+  // --- Accessibility helpers ---------------------------------------------
+
+  function announce(message) {
+    liveRegionEl.textContent = '';
+    // Small timeout ensures screen readers detect the change
+    setTimeout(() => {
+      liveRegionEl.textContent = message;
+    }, 50);
+  }
+
+  // Close modals with Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' || e.key === 'Esc') {
+      if (helpModalBackdrop.classList.contains('open')) {
+        closeHelpModal();
+      } else if (winnerModalBackdrop.classList.contains('open')) {
+        closeWinnerModal();
+      } else if (quizModalBackdrop.classList.contains('open')) {
+        // Treat closing quiz as wrong answer and switch player
+        closeQuizModal(false);
+      }
+    }
+  });
+
+  // --- Init --------------------------------------------------------------
+
+  startNewGame();
+</script>
+</body>
+</html>
