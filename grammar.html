@@ -1,0 +1,1143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ladybug & SuperCat — Snakes & Ladders (A0–A1)</title>
+  <style>
+    :root{
+      --bg1:#0b1a44;
+      --bg2:#ff2d55;
+      --bg3:#ffd400;
+      --card:#0f1535;
+      --ink:#f5f7ff;
+      --muted:#cbd3ff;
+      --good:#4cff7a;
+      --bad:#ff4c6a;
+      --shadow: 0 14px 40px rgba(0,0,0,.35);
+      --ring: 0 0 0 4px rgba(255,212,0,.35);
+      --grid: 10;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(1000px 800px at 15% 20%, rgba(255,45,85,.35), transparent 60%),
+        radial-gradient(900px 700px at 85% 25%, rgba(255,212,0,.25), transparent 55%),
+        radial-gradient(1200px 900px at 60% 90%, rgba(76,255,122,.18), transparent 60%),
+        linear-gradient(180deg, var(--bg1), #070b22 70%);
+      overflow-x:hidden;
+    }
+
+    header{
+      position:sticky; top:0; z-index:50;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(90deg, rgba(15,21,53,.85), rgba(10,12,35,.55));
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+
+    .wrap{ max-width:1100px; margin:0 auto; padding:14px 16px; }
+
+    .top{
+      display:flex; gap:14px; align-items:center; justify-content:space-between;
+      flex-wrap:wrap;
+    }
+
+    .brand{
+      display:flex; gap:12px; align-items:center;
+      min-width:260px;
+    }
+
+    .badge{
+      width:44px; height:44px; border-radius:14px;
+      background:
+        radial-gradient(circle at 30% 30%, #ff2d55 0 45%, transparent 46%),
+        radial-gradient(circle at 70% 65%, #ff2d55 0 40%, transparent 41%),
+        linear-gradient(135deg, #ffd400, #ff2d55);
+      box-shadow: 0 12px 26px rgba(255,45,85,.35);
+      border:1px solid rgba(255,255,255,.18);
+      position:relative;
+      overflow:hidden;
+    }
+    .badge::after{
+      content:"";
+      position:absolute; inset:-20px;
+      background: radial-gradient(circle at 20% 20%, rgba(255,255,255,.35), transparent 55%);
+      transform: rotate(18deg);
+    }
+
+    h1{ font-size:18px; margin:0; line-height:1.15; }
+    .sub{ font-size:12px; margin:2px 0 0; color:var(--muted); }
+
+    .controls{
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    button{
+      border:0; color:var(--ink);
+      background: linear-gradient(180deg, rgba(255,45,85,.95), rgba(255,45,85,.75));
+      padding:10px 12px;
+      border-radius:12px;
+      box-shadow: var(--shadow);
+      cursor:pointer;
+      font-weight:700;
+      letter-spacing:.2px;
+      transition: transform .12s ease, filter .12s ease;
+      outline:none;
+    }
+    button:hover{ transform: translateY(-1px); filter: brightness(1.05); }
+    button:active{ transform: translateY(0px); filter: brightness(.98); }
+    button:focus-visible{ box-shadow: var(--shadow), var(--ring); }
+
+    .btn-alt{
+      background: linear-gradient(180deg, rgba(255,212,0,.95), rgba(255,212,0,.72));
+      color:#201a00;
+    }
+
+    .btn-ghost{
+      background: rgba(255,255,255,.08);
+      box-shadow:none;
+      border:1px solid rgba(255,255,255,.12);
+      font-weight:650;
+    }
+
+    main{ max-width:1100px; margin:0 auto; padding:18px 16px 34px; }
+
+    .layout{
+      display:grid;
+      grid-template-columns: 1.25fr .85fr;
+      gap:16px;
+      align-items:start;
+    }
+
+    @media (max-width: 980px){
+      .layout{ grid-template-columns: 1fr; }
+      .brand{ min-width:unset; }
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(15,21,53,.92), rgba(10,12,35,.78));
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:18px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .card-h{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 14px 10px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+
+    .card-h h2{ font-size:14px; margin:0; }
+    .pill{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      background: rgba(255,212,0,.16);
+      border:1px solid rgba(255,212,0,.26);
+      color: #ffe88a;
+    }
+
+    .board-wrap{ padding:12px; }
+
+    .board{
+      width:100%;
+      aspect-ratio: 1/1;
+      display:grid;
+      grid-template-columns: repeat(var(--grid), 1fr);
+      grid-template-rows: repeat(var(--grid), 1fr);
+      gap:6px;
+      padding:8px;
+      border-radius:16px;
+      background:
+        radial-gradient(circle at 12% 15%, rgba(255,45,85,.18), transparent 50%),
+        radial-gradient(circle at 85% 30%, rgba(255,212,0,.14), transparent 50%),
+        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.10);
+      position:relative;
+    }
+
+    .cell{
+      position:relative;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+      box-shadow: 0 8px 18px rgba(0,0,0,.18);
+      overflow:hidden;
+      padding:6px;
+      min-width:0;
+      user-select:none;
+    }
+
+    .cell[data-type="ladder"]{ border-color: rgba(76,255,122,.55); }
+    .cell[data-type="snake"]{ border-color: rgba(255,45,85,.55); }
+
+    .num{
+      position:absolute;
+      top:6px; left:8px;
+      font-weight:900;
+      font-size:12px;
+      color: rgba(245,247,255,.95);
+      text-shadow: 0 2px 10px rgba(0,0,0,.6);
+    }
+
+    .tag{
+      position:absolute;
+      bottom:6px; left:6px;
+      display:inline-flex; align-items:center; gap:6px;
+      font-size:11px;
+      padding:4px 7px;
+      border-radius:999px;
+      background: rgba(0,0,0,.35);
+      border: 1px solid rgba(255,255,255,.10);
+      color: rgba(245,247,255,.9);
+      max-width: calc(100% - 12px);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .tag .dot{
+      width:9px; height:9px;
+      border-radius:999px;
+      background: rgba(255,255,255,.7);
+      box-shadow: 0 0 0 3px rgba(255,255,255,.12);
+      flex:0 0 auto;
+    }
+
+    .tag.ladder{ background: rgba(76,255,122,.14); border-color: rgba(76,255,122,.32); }
+    .tag.ladder .dot{ background: var(--good); }
+
+    .tag.snake{ background: rgba(255,45,85,.14); border-color: rgba(255,45,85,.32); }
+    .tag.snake .dot{ background: var(--bad); }
+
+    .tag.task{ background: rgba(255,212,0,.12); border-color: rgba(255,212,0,.26); color:#ffeaa6; }
+    .tag.task .dot{ background: #ffd400; }
+
+    .tokens{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+    }
+
+    .token{
+      position:absolute;
+      width:22px; height:22px;
+      border-radius:999px;
+      display:grid; place-items:center;
+      font-size:14px;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 10px 22px rgba(0,0,0,.35);
+      border: 2px solid rgba(255,255,255,.82);
+      background: rgba(0,0,0,.25);
+    }
+    .token.p1{ background: rgba(255,45,85,.18); }
+    .token.p2{ background: rgba(255,212,0,.18); }
+
+    .panel{ padding:12px 14px 14px; }
+
+    .stats{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-bottom:12px;
+    }
+
+    .stat{
+      padding:10px 10px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+    }
+
+    .stat b{ font-size:13px; }
+    .stat small{ display:block; color:var(--muted); font-weight:650; margin-top:2px; }
+
+    .turn{
+      grid-column: 1 / -1;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: linear-gradient(90deg, rgba(255,45,85,.16), rgba(255,212,0,.12));
+    }
+
+    .turn .who{ font-weight:900; }
+    .turn .hint{ color:var(--muted); font-size:12px; font-weight:650; }
+
+    .actions{ display:flex; gap:10px; flex-wrap:wrap; }
+
+    .log{
+      margin-top:12px;
+      padding:10px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.22);
+      min-height:88px;
+      max-height:190px;
+      overflow:auto;
+      font-size:13px;
+      line-height:1.35;
+    }
+
+    .log p{ margin:0 0 8px; }
+    .log p:last-child{ margin:0; }
+
+    .k{ color:#ffeaa6; font-weight:900; }
+
+    /* Modal */
+    dialog{
+      width:min(860px, calc(100% - 18px));
+      border:0;
+      border-radius:18px;
+      padding:0;
+      box-shadow: 0 24px 80px rgba(0,0,0,.55);
+      background: linear-gradient(180deg, rgba(15,21,53,.98), rgba(10,12,35,.92));
+      color:var(--ink);
+    }
+    dialog::backdrop{
+      background: rgba(0,0,0,.62);
+      backdrop-filter: blur(3px);
+    }
+
+    .modal-h{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px;
+      padding:14px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+    }
+
+    .modal-h h3{ margin:0; font-size:14px; }
+
+    .modal-b{ padding:14px; display:grid; gap:12px; }
+
+    .task-box{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      border-radius:16px;
+      padding:12px;
+    }
+
+    .task-meta{
+      display:flex; gap:8px; flex-wrap:wrap; align-items:center;
+      margin-bottom:8px;
+    }
+
+    .chip{
+      font-size:12px;
+      font-weight:800;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      color: rgba(245,247,255,.95);
+    }
+
+    .chip.good{ border-color: rgba(76,255,122,.35); background: rgba(76,255,122,.10); }
+    .chip.bad{ border-color: rgba(255,45,85,.35); background: rgba(255,45,85,.10); }
+
+    .q{ font-size:16px; font-weight:900; margin:0 0 10px; }
+
+    .prompt{ color:var(--muted); margin:0 0 10px; font-weight:650; }
+
+    .answer-row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+    input[type="text"], select{
+      flex: 1 1 260px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.22);
+      color:var(--ink);
+      outline:none;
+    }
+    input[type="text"]:focus, select:focus{ box-shadow: var(--ring); border-color: rgba(255,212,0,.35); }
+
+    .feedback{
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.20);
+      font-weight:750;
+      display:none;
+    }
+    .feedback.ok{ border-color: rgba(76,255,122,.40); background: rgba(76,255,122,.10); }
+    .feedback.no{ border-color: rgba(255,45,85,.40); background: rgba(255,45,85,.10); }
+
+    .help{
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px dashed rgba(255,255,255,.18);
+      background: rgba(255,255,255,.04);
+      color: var(--muted);
+      font-size:13px;
+      line-height:1.35;
+    }
+
+    .sr-only{
+      position:absolute;
+      width:1px;height:1px;
+      padding:0;margin:-1px;
+      overflow:hidden;clip:rect(0,0,0,0);
+      white-space:nowrap;border:0;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="wrap top">
+    <div class="brand" aria-label="Game title">
+      <div class="badge" aria-hidden="true"></div>
+      <div>
+        <h1>Ladybug &amp; SuperCat — Snakes &amp; Ladders</h1>
+        <p class="sub">A0–A1 • to be • numbers 1–100 • feelings • family • colours • favourites • gadgets • pets</p>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn-ghost" id="btnHelp" type="button">How to play</button>
+      <button class="btn-alt" id="btnReset" type="button">New game</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="layout">
+
+    <section class="card" aria-label="Board">
+      <div class="card-h">
+        <h2>Board (1–100)</h2>
+        <span class="pill" id="deckPill">Tasks left: <span id="leftCount">100</span></span>
+      </div>
+
+      <div class="board-wrap">
+        <div class="board" id="board" aria-label="Snakes and ladders board">
+          <div class="tokens" aria-hidden="true">
+            <div class="token p1" id="t1" title="Player 1">🐞</div>
+            <div class="token p2" id="t2" title="Player 2">🐾</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="card" aria-label="Game panel">
+      <div class="card-h">
+        <h2>Play</h2>
+        <span class="pill">No repeats 🎯</span>
+      </div>
+
+      <div class="panel">
+        <div class="stats">
+          <div class="stat" aria-label="Player 1 status">
+            <div>
+              <b>Player 1 🐞</b>
+              <small>Square: <span id="p1pos">1</span></small>
+            </div>
+            <div class="pill" style="background:rgba(255,45,85,.18);border-color:rgba(255,45,85,.28);color:#ffd6dd">Ladybug</div>
+          </div>
+
+          <div class="stat" aria-label="Player 2 status">
+            <div>
+              <b>Player 2 🐾</b>
+              <small>Square: <span id="p2pos">1</span></small>
+            </div>
+            <div class="pill" style="background:rgba(255,212,0,.16);border-color:rgba(255,212,0,.28);color:#ffeaa6">SuperCat</div>
+          </div>
+
+          <div class="turn" aria-label="Turn">
+            <div>
+              <div class="who">Turn: <span id="turnName">Player 1 🐞</span></div>
+              <div class="hint">Click <b>Roll</b> → do the task → move.</div>
+            </div>
+            <div class="pill" id="diePill">🎲 <span id="dieVal">-</span></div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btnRoll" type="button">Roll 🎲</button>
+          <button class="btn-alt" id="btnPass" type="button">Pass turn</button>
+          <button class="btn-ghost" id="btnZoom" type="button">Zoom board</button>
+        </div>
+
+        <div class="log" id="log" aria-label="Game log" role="log" aria-live="polite"></div>
+
+        <div class="help" style="margin-top:12px">
+          <b>Teacher tip:</b> For A0–A1, let the student answer orally. Use the input only if you want.
+          If a task says <b>“Finish”</b> or <b>“Fill”</b>, one word is enough.
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</main>
+
+<dialog id="taskDlg" aria-label="Task dialog">
+  <form method="dialog" id="taskForm">
+    <div class="modal-h">
+      <h3 id="taskTitle">Task</h3>
+      <button class="btn-ghost" value="close" type="submit" aria-label="Close">Close ✕</button>
+    </div>
+
+    <div class="modal-b">
+      <div class="task-box">
+        <div class="task-meta" id="taskMeta"></div>
+        <p class="q" id="taskText">—</p>
+        <p class="prompt" id="taskHint">—</p>
+
+        <div class="answer-row" id="answerRow">
+          <label class="sr-only" for="answerInput">Your answer</label>
+          <input id="answerInput" type="text" inputmode="text" autocomplete="off" placeholder="Type here (optional)" />
+          <button id="btnCheck" type="button" class="btn-alt">Check</button>
+          <button id="btnDone" type="button">Done ✅</button>
+        </div>
+
+        <div class="feedback" id="fb"></div>
+      </div>
+
+      <div class="help" id="helpBox">
+        <b>How checking works:</b> It’s simple on purpose. Some tasks have a “key”. If not, just click <b>Done ✅</b> after speaking.
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="helpDlg" aria-label="How to play">
+  <form method="dialog">
+    <div class="modal-h">
+      <h3>How to play</h3>
+      <button class="btn-ghost" value="close" type="submit">Close ✕</button>
+    </div>
+    <div class="modal-b">
+      <div class="help">
+        <p style="margin:0 0 10px"><b>Goal:</b> reach square <b>100</b>.</p>
+        <p style="margin:0 0 10px"><b>Turn:</b> Click <b>Roll 🎲</b>. A task pops up. Do it, then you move.</p>
+        <p style="margin:0 0 10px"><b>Ladders 🟩</b> take you <b>up</b>. <b>Snakes 🟥</b> take you <b>down</b>.</p>
+        <p style="margin:0"><b>Tasks:</b> present simple (to be), numbers 1–100, feelings, family members, colours, and favourites. No duplicated tasks.</p>
+      </div>
+      <div class="help">
+        <b>Controls:</b>
+        <ul style="margin:8px 0 0; padding-left:18px">
+          <li><b>Pass turn</b> if you want to switch player without rolling.</li>
+          <li><b>Zoom board</b> makes the board bigger/smaller (useful on laptops).</li>
+          <li><b>Esc</b> closes popups.</li>
+        </ul>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<script>
+(() => {
+  "use strict";
+
+  const boardEl = document.getElementById('board');
+  const logEl = document.getElementById('log');
+  const t1 = document.getElementById('t1');
+  const t2 = document.getElementById('t2');
+
+  const p1posEl = document.getElementById('p1pos');
+  const p2posEl = document.getElementById('p2pos');
+  const turnNameEl = document.getElementById('turnName');
+  const dieValEl = document.getElementById('dieVal');
+  const leftCountEl = document.getElementById('leftCount');
+
+  const btnRoll = document.getElementById('btnRoll');
+  const btnPass = document.getElementById('btnPass');
+  const btnReset = document.getElementById('btnReset');
+  const btnHelp = document.getElementById('btnHelp');
+  const btnZoom = document.getElementById('btnZoom');
+
+  const taskDlg = document.getElementById('taskDlg');
+  const taskTitle = document.getElementById('taskTitle');
+  const taskText = document.getElementById('taskText');
+  const taskHint = document.getElementById('taskHint');
+  const taskMeta = document.getElementById('taskMeta');
+  const answerInput = document.getElementById('answerInput');
+  const btnCheck = document.getElementById('btnCheck');
+  const btnDone = document.getElementById('btnDone');
+  const fb = document.getElementById('fb');
+
+  const helpDlg = document.getElementById('helpDlg');
+
+  // Board mapping: 1 at bottom-left, 10 bottom-right, 11 next row right-to-left, ... classic.
+  function numberToIndex(n){
+    // Returns cell index in DOM (0..99)
+    const row = Math.floor((n - 1) / 10); // 0 bottom row
+    const colInRow = (n - 1) % 10;
+    const isEvenRow = row % 2 === 0;
+    const col = isEvenRow ? colInRow : (9 - colInRow);
+    // DOM is built top-to-bottom. Convert to top-based row.
+    const domRow = 9 - row;
+    return domRow * 10 + col;
+  }
+
+  function getCellCenter(idx){
+    const cell = boardEl.querySelector(`[data-idx="${idx}"]`);
+    const r = cell.getBoundingClientRect();
+    const br = boardEl.getBoundingClientRect();
+    return {
+      x: (r.left - br.left) + r.width/2,
+      y: (r.top - br.top) + r.height/2,
+    };
+  }
+
+  function placeToken(tokenEl, n, offset){
+    const idx = numberToIndex(n);
+    const c = getCellCenter(idx);
+    tokenEl.style.left = `${c.x + offset.x}px`;
+    tokenEl.style.top = `${c.y + offset.y}px`;
+  }
+
+  function log(msg){
+    const p = document.createElement('p');
+    p.innerHTML = msg;
+    logEl.prepend(p);
+  }
+
+  const snakes = {
+    98: 79,
+    95: 75,
+    93: 68,
+    87: 36,
+    64: 60,
+    62: 19,
+    54: 34,
+    46: 25,
+    28: 9,
+    17: 6,
+  };
+
+  const ladders = {
+    2: 23,
+    7: 29,
+    8: 31,
+    15: 37,
+    21: 42,
+    33: 52,
+    39: 58,
+    44: 65,
+    57: 76,
+    72: 91,
+  };
+
+  const topics = {
+    toBe: { name: "To be", emoji: "🧩" },
+    numbers: { name: "Numbers 1–100", emoji: "🔢" },
+    feelings: { name: "Feelings", emoji: "🙂" },
+    family: { name: "Family", emoji: "👨‍👩‍👧" },
+    colours: { name: "Colours", emoji: "🎨" },
+    fav: { name: "My favourites", emoji: "⭐" },
+    gadgets: { name: "Gadgets", emoji: "📱" },
+    pets: { name: "Pets", emoji: "🐶" },
+  };
+
+  // 100 unique tasks (one per square). Many are oral-friendly.
+  // type: question | fill | finish | choose
+  // key: optional (string or array of acceptable strings). If absent, checking is skipped.
+  const TASKS = (() => {
+    const colours = ["red","blue","green","yellow","black","white","pink","purple","orange","brown"];
+    const feelings = ["happy","sad","hungry","good","bad","surprised","scared"];
+    const family = ["mum","dad","mother","father","sister","brother","grandma","grandpa","aunt","uncle"];
+    const gadgets = ["phone","tablet","laptop","computer","TV","camera","smartwatch","headphones"];
+    const pets = ["dog","cat","hamster","fish","parrot","turtle","rabbit","mouse"];
+
+    const t = [];
+
+    // Helper
+    const add = (topic, type, text, hint, key=null) => t.push({ topic, type, text, hint, key });
+
+    // 1–20: To be basics (I am / You are / He is / She is)
+    add('toBe','fill','I ___ Maria.','Fill the gap: am / are / is','am');
+    add('toBe','fill','You ___ my friend.','Fill the gap: am / are / is','are');
+    add('toBe','fill','He ___ a boy.','Fill the gap: am / are / is','is');
+    add('toBe','fill','She ___ a girl.','Fill the gap: am / are / is','is');
+    add('toBe','fill','We ___ students.','Fill the gap: am / are / is','are');
+    add('toBe','fill','They ___ happy.','Fill the gap: am / are / is','are');
+    add('toBe','question','What is your name?','Answer: My name is ___.');
+    add('toBe','question','How old are you?','Answer: I am ___.');
+    add('toBe','finish','I am ___.','Finish with a feeling: happy/sad/hungry/good/bad/surprised/scared', feelings);
+    add('toBe','finish','My favourite colour is ___.','Finish with a colour (red/blue/green/...)', colours);
+
+    add('toBe','fill','It ___ a cat.','Fill the gap: am / are / is','is');
+    add('toBe','fill','This ___ my book.','Fill the gap: am / are / is','is');
+    add('toBe','fill','These ___ my pencils.','Fill the gap: am / are / is','are');
+    add('toBe','fill','That ___ my teacher.','Fill the gap: am / are / is','is');
+    add('toBe','choose','Choose: "I ___ happy."','Type: am / are / is','am');
+    add('toBe','choose','Choose: "You ___ sad."','Type: am / are / is','are');
+    add('toBe','choose','Choose: "She ___ hungry."','Type: am / are / is','is');
+    add('toBe','finish','Today I am ___.','Finish with 1 feeling word', feelings);
+    add('toBe','finish','My mum is ___.','Finish: a teacher / a doctor / nice / happy (any).');
+    add('toBe','question','Who is in your family?','Say 2–3 family members.');
+
+    // 21–40: Numbers 1–100 (speak / simple questions)
+    add('numbers','question','Count: 1 → 10','Say the numbers.');
+    add('numbers','question','Count: 10 → 1','Say the numbers backwards.');
+    add('numbers','question','What number is after 19?','Say the number.', '20');
+    add('numbers','question','What number is before 30?','Say the number.', '29');
+    add('numbers','fill','40, 41, 42, ___','Fill the missing number.','43');
+    add('numbers','fill','55, 56, ___, 58','Fill the missing number.','57');
+    add('numbers','fill','70, ___, 72','Fill the missing number.','71');
+    add('numbers','finish','My favourite number is ___.','Say any number 1–100.');
+    add('numbers','question','How many people are in your family?','Answer with a number (e.g., four).');
+    add('numbers','question','How many colours do you know?','Say a number + name 2 colours.');
+
+    add('numbers','question','Say 3 numbers between 1 and 20.','Any 3 numbers.');
+    add('numbers','question','Say 3 numbers between 50 and 100.','Any 3 numbers.');
+    add('numbers','fill','90, 91, 92, ___','Fill the missing number.','93');
+    add('numbers','fill','99, ___','Fill the missing number.','100');
+    add('numbers','question','What number is this? 8 + 2','Say the answer.','10');
+    add('numbers','question','What number is this? 5 + 5','Say the answer.','10');
+    add('numbers','question','What number is this? 10 − 1','Say the answer.','9');
+    add('numbers','question','What number is this? 20 − 10','Say the answer.','10');
+    add('numbers','finish','I am ___. (age)','Finish with a number 1–100.');
+    add('numbers','question','Pick a number 1–100 and spell it in English.','For A0: just say the number.');
+
+    // 41–55: Feelings (is/are + vocabulary)
+    add('feelings','question','Show a face: happy 😄','Say: I am happy.');
+    add('feelings','question','Show a face: sad 😢','Say: I am sad.');
+    add('feelings','question','Show a face: hungry 🍎','Say: I am hungry.');
+    add('feelings','question','Show a face: scared 😱','Say: I am scared.');
+    add('feelings','question','Show a face: surprised 😲','Say: I am surprised.');
+
+    add('feelings','fill','I am ___ (not happy).','Use: sad / hungry / scared / surprised / good / bad','sad');
+    add('feelings','fill','I am ___ (I want food).','Use: hungry / happy / sad / good / bad','hungry');
+    add('feelings','fill','He is ___. (not good)','Use: bad / good / happy','bad');
+    add('feelings','fill','She is ___. (not bad)','Use: good / bad','good');
+    add('feelings','finish','Today my mum is ___.','Finish with 1 feeling word', feelings);
+
+    add('feelings','question','Ask a question: "___ you happy?"','Say the full question (Are you happy?)','are you happy');
+    add('feelings','question','Answer: Are you sad?','Answer: Yes, I am. / No, I am not.');
+    add('feelings','finish','I am happy because ___.','Finish with 1–3 words.');
+    add('feelings','finish','I am scared of ___.','Finish with a word (spiders, dogs, etc.).');
+    add('feelings','question','Say 3 feelings.','Use the list: happy/sad/hungry/good/bad/surprised/scared');
+
+    // 56–70: Family members
+    add('family','question','Who is this? (mum)','Say: This is my mum.');
+    add('family','question','Who is this? (dad)','Say: This is my dad.');
+    add('family','question','Finish: This is my ___.','Finish with a family member', family);
+    add('family','finish','My mum is ___.','Finish: nice / kind / happy / a teacher (any).');
+    add('family','finish','My dad is ___.','Finish: tall / funny / good (any).');
+
+    add('family','question','Do you have a brother?','Answer: Yes, I do. / No, I don’t.');
+    add('family','question','Do you have a sister?','Answer: Yes, I do. / No, I don’t.');
+    add('family','question','Say 3 family members.','Example: mum, dad, sister.');
+    add('family','fill','My ___ is a woman.','Fill: mum / dad / brother / sister','mum');
+    add('family','fill','My ___ is a man.','Fill: mum / dad / sister / grandma','dad');
+
+    add('family','finish','I love my ___.','Finish with a family member', family);
+    add('family','question','How many brothers/sisters do you have?','Answer with a number.');
+    add('family','fill','Grandma is my mum’s ___.','Finish: mother','mother');
+    add('family','fill','Grandpa is my dad’s ___.','Finish: father','father');
+    add('family','question','Name 1 person in your family.','Say: My ___.');
+
+    // 71–85: Colours + favourites
+    add('colours','question','Point to something red.','Say: It is red.');
+    add('colours','question','Point to something blue.','Say: It is blue.');
+    add('colours','question','Say 3 colours.','Any 3 colours.');
+    add('colours','fill','The sky is ___.','Fill with a colour','blue');
+    add('colours','fill','The sun is ___.','Fill with a colour','yellow');
+
+    add('colours','finish','My favourite colour is ___.','Say a colour', colours);
+    add('fav','question','What is your favourite food?','Answer: My favourite food is ___.');
+    add('fav','question','What is your favourite animal?','Answer: My favourite animal is ___.');
+    add('fav','question','What is your favourite colour?','Answer: My favourite colour is ___.');
+    add('fav','finish','My favourite thing is ___.','Finish with a word (book, cat, phone…).');
+
+    add('fav','finish','I like ___.','Finish with 1 thing (cats, pizza, games…).');
+    add('fav','finish','I don’t like ___.','Finish with 1 thing.');
+    add('fav','question','Do you like pizza?','Answer: Yes, I do. / No, I don’t.');
+    add('fav','question','Do you like cats?','Answer: Yes, I do. / No, I don’t.');
+    add('fav','finish','My favourite number is ___.','Finish with a number 1–100.');
+
+    // 86–95: NEW — Gadgets + Pets
+    add('gadgets','question','What gadget do you have?','Say: I have a phone/tablet/laptop.');
+    add('gadgets','finish','My favourite gadget is ___.','Finish with: phone/tablet/laptop/TV', gadgets);
+    add('gadgets','fill','This is my ___.','Fill: phone / tablet / laptop / computer','phone');
+    add('gadgets','question','Do you like your phone?','Answer: Yes, I do. / No, I don’t.');
+    add('gadgets','finish','I use my ___ every day.','Finish: phone / laptop / computer', gadgets);
+
+    add('pets','question','Do you have a pet?','Answer: Yes, I do. / No, I don’t.');
+    add('pets','finish','I have a ___.','Finish with a pet (dog/cat/hamster/…) ', pets);
+    add('pets','question','What is your favourite pet?','Answer: My favourite pet is a ___.');
+    add('pets','fill','A cat ___ small.','Fill the gap: is / are','is');
+    add('pets','finish','My pet is ___.','Finish with a colour or feeling (brown / happy / etc.).');
+
+    // 96–110: Mixed review (some may be cut off by slice(0,100))
+    add('toBe','fill','I ___ happy.','am / are / is','am');
+    add('toBe','fill','You ___ good.','am / are / is','are');
+    add('toBe','fill','He ___ bad.','am / are / is','is');
+    add('toBe','question','Make a question: "Are you hungry?"','Say the question.');
+    add('toBe','question','Answer: Are you surprised?','Yes, I am. / No, I’m not.');
+
+    add('numbers','question','Count by tens: 10, 20, 30…','Stop at 100.');
+    add('numbers','fill','30, 40, 50, ___','Fill the missing number.','60');
+    add('family','finish','This is my ___.','Finish with a family member', family);
+    add('colours','finish','It is ___.','Finish with a colour', colours);
+    add('feelings','finish','I am ___.','Finish with a feeling', feelings);
+
+    add('fav','finish','My favourite ___ is ___.','Finish: food/colour/animal + word.');
+    add('toBe','fill','We ___ friends.','am / are / is','are');
+    add('toBe','fill','They ___ in class.','am / are / is','are');
+    add('numbers','question','Say the number: 100','Say “one hundred”.');
+    add('toBe','question','WIN TASK: Say 3 sentences with “I am…”.','Example: I am happy. I am a student. I am good.');
+
+    // Ensure exactly 100 tasks (filler tasks rotate through new topics too)
+    const filler = [
+      () => add('gadgets','finish','Bonus: I have a ___.','Finish with a gadget', gadgets),
+      () => add('pets','finish','Bonus: I like ___.','Finish with a pet', pets),
+      () => add('colours','finish','Bonus: My favourite colour is ___.','Say a colour', colours),
+      () => add('feelings','finish','Bonus: Today I am ___.','Say a feeling', feelings),
+    ];
+
+    let fi = 0;
+    while(t.length < 100){
+      filler[fi % filler.length]();
+      fi++;
+    }
+
+    return t.slice(0,100);
+  })();
+
+  // Build board cells (DOM indices 0..99) with number labels
+  function buildBoard(){
+    boardEl.querySelectorAll('.cell').forEach(el => el.remove());
+
+    for(let domIdx=0; domIdx<100; domIdx++){
+      // Map DOM idx back to number
+      const domRow = Math.floor(domIdx/10); // 0 top
+      const domCol = domIdx%10;
+      const rowFromBottom = 9 - domRow;
+      const isEvenRow = rowFromBottom % 2 === 0;
+      const colInRow = isEvenRow ? domCol : (9-domCol);
+      const n = rowFromBottom*10 + colInRow + 1;
+
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.idx = String(domIdx);
+      cell.dataset.n = String(n);
+
+      const num = document.createElement('div');
+      num.className = 'num';
+      num.textContent = String(n);
+      cell.appendChild(num);
+
+      // Add type tags
+      if(ladders[n]){
+        cell.dataset.type = 'ladder';
+        const tag = document.createElement('div');
+        tag.className = 'tag ladder';
+        tag.innerHTML = `<span class="dot" aria-hidden="true"></span> Ladder → ${ladders[n]}`;
+        cell.appendChild(tag);
+      } else if(snakes[n]){
+        cell.dataset.type = 'snake';
+        const tag = document.createElement('div');
+        tag.className = 'tag snake';
+        tag.innerHTML = `<span class="dot" aria-hidden="true"></span> Snake → ${snakes[n]}`;
+        cell.appendChild(tag);
+      } else {
+        const tag = document.createElement('div');
+        tag.className = 'tag task';
+        const topic = topics[TASKS[n-1].topic];
+        tag.innerHTML = `<span class="dot" aria-hidden="true"></span> ${topic.emoji} ${topic.name}`;
+        cell.appendChild(tag);
+      }
+
+      boardEl.appendChild(cell);
+    }
+  }
+
+  // Game state
+  const state = {
+    p1: 1,
+    p2: 1,
+    turn: 1, // 1 or 2
+    lastDie: null,
+    usedTasks: new Set(), // squares used
+    pendingMove: null,
+    zoom: false,
+  };
+
+  function setTurn(t){
+    state.turn = t;
+    turnNameEl.textContent = t === 1 ? 'Player 1 🐞' : 'Player 2 🐾';
+  }
+
+  function updateUI(){
+    p1posEl.textContent = String(state.p1);
+    p2posEl.textContent = String(state.p2);
+    dieValEl.textContent = state.lastDie ?? '-';
+
+    const used = state.usedTasks.size;
+    leftCountEl.textContent = String(Math.max(0, 100 - used));
+
+    // token offsets so they don't overlap
+    placeToken(t1, state.p1, {x:-10, y: -10});
+    placeToken(t2, state.p2, {x:+10, y: +10});
+
+    // Disable roll if a move is pending
+    btnRoll.disabled = Boolean(state.pendingMove);
+    btnPass.disabled = Boolean(state.pendingMove);
+  }
+
+  function rollDie(){
+    return Math.floor(Math.random()*6) + 1;
+  }
+
+  function currentPos(){
+    return state.turn === 1 ? state.p1 : state.p2;
+  }
+
+  function setCurrentPos(v){
+    if(state.turn === 1) state.p1 = v;
+    else state.p2 = v;
+  }
+
+  function nextTurn(){
+    setTurn(state.turn === 1 ? 2 : 1);
+    state.lastDie = null;
+    updateUI();
+  }
+
+  function openTask(square, die){
+    const task = TASKS[square - 1];
+    state.pendingMove = { square, die, task };
+
+    taskTitle.textContent = `Square ${square} • ${topics[task.topic].emoji} ${topics[task.topic].name}`;
+    taskText.textContent = task.text;
+
+    // Friendly micro-hints
+    const hintMap = {
+      question: 'Answer the question.',
+      fill: 'Fill in the missing word(s).',
+      finish: 'Finish the sentence.',
+      choose: 'Choose the correct word.',
+    };
+
+    let extra = '';
+    if(Array.isArray(task.key)){
+      extra = `Use one of these: ${task.key.join(', ')}.`;
+    } else if(typeof task.key === 'string'){
+      // no extra
+    }
+
+    taskHint.textContent = `${hintMap[task.type] ?? 'Do the task.'} ${task.hint ?? ''} ${extra}`.trim();
+
+    // meta chips
+    taskMeta.innerHTML = '';
+    const chip1 = document.createElement('span');
+    chip1.className = 'chip';
+    chip1.textContent = `🎲 Roll: ${die}`;
+    taskMeta.appendChild(chip1);
+
+    const chip2 = document.createElement('span');
+    chip2.className = 'chip';
+    chip2.textContent = `Task type: ${task.type}`;
+    taskMeta.appendChild(chip2);
+
+    if(ladders[square]){
+      const chip = document.createElement('span');
+      chip.className = 'chip good';
+      chip.textContent = `Ladder to ${ladders[square]} (after move)`;
+      taskMeta.appendChild(chip);
+    }
+    if(snakes[square]){
+      const chip = document.createElement('span');
+      chip.className = 'chip bad';
+      chip.textContent = `Snake to ${snakes[square]} (after move)`;
+      taskMeta.appendChild(chip);
+    }
+
+    answerInput.value = '';
+    fb.style.display = 'none';
+    fb.className = 'feedback';
+
+    // If task has no key → checking isn't meaningful
+    btnCheck.disabled = !(typeof task.key === 'string');
+
+    taskDlg.showModal();
+    answerInput.focus();
+    updateUI();
+  }
+
+  function normalize(s){
+    return String(s).trim().toLowerCase().replace(/\s+/g,' ');
+  }
+
+  function checkAnswer(){
+    const pm = state.pendingMove;
+    if(!pm) return;
+    const task = pm.task;
+
+    if(typeof task.key !== 'string'){
+      fb.textContent = 'This task is for speaking. Click Done ✅ when ready.';
+      fb.className = 'feedback';
+      fb.style.display = 'block';
+      return;
+    }
+
+    const ans = normalize(answerInput.value);
+    const key = normalize(task.key);
+
+    const ok = ans === key;
+    fb.textContent = ok ? '✅ Correct!' : `❌ Not quite. Hint: ${task.hint || 'Try again.'}`;
+    fb.className = `feedback ${ok ? 'ok' : 'no'}`;
+    fb.style.display = 'block';
+  }
+
+  function applyMove(){
+    const pm = state.pendingMove;
+    if(!pm) return;
+
+    const from = currentPos();
+    let to = from + pm.die;
+
+    if(to > 100){
+      log(`<span class="k">${state.turn === 1 ? '🐞' : '🐾'}</span> rolled <b>${pm.die}</b> but needs an exact roll. Stay on <b>${from}</b>.`);
+      state.usedTasks.add(pm.square);
+      state.pendingMove = null;
+      taskDlg.close();
+      nextTurn();
+      return;
+    }
+
+    setCurrentPos(to);
+
+    // Snakes / ladders on landing square
+    let special = '';
+    if(ladders[to]){
+      special = ` <span class="k">Ladder!</span> ${to} → <b>${ladders[to]}</b>`;
+      to = ladders[to];
+      setCurrentPos(to);
+    } else if(snakes[to]){
+      special = ` <span class="k" style="color:#ffb2bf">Snake!</span> ${to} → <b>${snakes[to]}</b>`;
+      to = snakes[to];
+      setCurrentPos(to);
+    }
+
+    log(`<span class="k">${state.turn === 1 ? '🐞' : '🐾'}</span> rolled <b>${pm.die}</b>: ${from} → <b>${from + pm.die}</b>.${special}`);
+
+    state.usedTasks.add(pm.square);
+    state.pendingMove = null;
+    taskDlg.close();
+
+    updateUI();
+
+    if(to === 100){
+      log(`<span class="k">🎉 WIN!</span> ${state.turn === 1 ? 'Player 1 🐞' : 'Player 2 🐾'} reached <b>100</b>!`);
+      btnRoll.disabled = true;
+      btnPass.disabled = true;
+      return;
+    }
+
+    nextTurn();
+  }
+
+  function getNextTaskSquare(pos){
+    // The task belongs to the square you LAND on after roll (classic classroom flow).
+    // But we must avoid duplicates: if the landing square task was already used,
+    // find the nearest not-yet-used square upward (wrap to 1..100).
+
+    if(!state.usedTasks.has(pos)) return pos;
+
+    for(let i=1;i<=100;i++){
+      const s = ((pos - 1 + i) % 100) + 1;
+      if(!state.usedTasks.has(s)) return s;
+    }
+
+    return pos; // all used
+  }
+
+  function onRoll(){
+    if(state.pendingMove) return;
+
+    const die = rollDie();
+    state.lastDie = die;
+
+    const pos = currentPos();
+    const landing = Math.min(100, pos + die);
+
+    const squareForTask = getNextTaskSquare(landing);
+
+    log(`<span class="k">${state.turn === 1 ? '🐞' : '🐾'}</span> rolls… <b>${die}</b>. Task from square <b>${squareForTask}</b>.`);
+
+    openTask(squareForTask, die);
+  }
+
+  function reset(){
+    state.p1 = 1;
+    state.p2 = 1;
+    state.turn = 1;
+    state.lastDie = null;
+    state.usedTasks = new Set();
+    state.pendingMove = null;
+
+    btnRoll.disabled = false;
+    btnPass.disabled = false;
+
+    logEl.innerHTML = '';
+    log('Ready! Player 1 🐞 starts.');
+
+    updateUI();
+  }
+
+  function toggleZoom(){
+    state.zoom = !state.zoom;
+    if(state.zoom){
+      document.documentElement.style.setProperty('--grid', '10');
+      boardEl.style.transform = 'scale(1.08)';
+      boardEl.style.transformOrigin = 'center';
+      btnZoom.textContent = 'Unzoom board';
+    } else {
+      boardEl.style.transform = 'scale(1)';
+      btnZoom.textContent = 'Zoom board';
+    }
+    // Re-place tokens after transform/layout
+    setTimeout(updateUI, 60);
+  }
+
+  // Events
+  btnRoll.addEventListener('click', onRoll);
+  btnPass.addEventListener('click', () => {
+    if(state.pendingMove) return;
+    log(`<span class="k">${state.turn === 1 ? '🐞' : '🐾'}</span> passes the turn.`);
+    nextTurn();
+  });
+
+  btnReset.addEventListener('click', reset);
+  btnHelp.addEventListener('click', () => helpDlg.showModal());
+  btnZoom.addEventListener('click', toggleZoom);
+
+  btnCheck.addEventListener('click', checkAnswer);
+  btnDone.addEventListener('click', applyMove);
+
+  // Close dialogs on Esc: native for <dialog>, but keep consistent focus
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape'){
+      // allow native
+      fb.style.display = 'none';
+    }
+  });
+
+  // Reposition tokens on resize
+  window.addEventListener('resize', () => updateUI());
+
+  // Init
+  buildBoard();
+  reset();
+
+})();
+</script>
+</body>
+</html>
