@@ -1,0 +1,971 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Whack-a-Character! — Appearance Descriptions</title>
+  <style>
+    :root{
+      --bg1:#0b1224;
+      --bg2:#1b2a5a;
+      --panel:#0f1a35;
+      --card:#12214a;
+      --ink:#f6fbff;
+      --muted:#cfe2ff;
+      --accent:#ffcf4a;
+      --accent2:#7cf7c3;
+      --danger:#ff5b77;
+      --shadow: 0 16px 40px rgba(0,0,0,.35);
+      --radius: 18px;
+      --stroke: 3px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Comic Sans MS", "Comic Neue", cursive;
+      color:var(--ink);
+      background:
+        radial-gradient(900px 600px at 15% 10%, rgba(255,207,74,.22), transparent 60%),
+        radial-gradient(900px 600px at 85% 5%, rgba(124,247,195,.18), transparent 55%),
+        radial-gradient(900px 600px at 70% 85%, rgba(255,91,119,.16), transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+      overflow-x:hidden;
+    }
+
+    .wrap{max-width:1100px; margin:0 auto; padding:18px 14px 40px}
+
+    header{
+      display:flex;
+      gap:14px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      padding:12px 12px;
+      background: rgba(15,26,53,.6);
+      border: var(--stroke) solid rgba(255,255,255,.18);
+      border-radius: calc(var(--radius) + 6px);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 10px;
+      z-index: 10;
+    }
+
+    .title{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:260px;
+    }
+
+    .badge{
+      width:44px; height:44px;
+      border-radius:14px;
+      background: linear-gradient(135deg, rgba(255,207,74,.95), rgba(124,247,195,.95));
+      border: var(--stroke) solid rgba(255,255,255,.35);
+      box-shadow: 0 10px 25px rgba(0,0,0,.25);
+      display:grid;
+      place-items:center;
+      color:#12214a;
+      font-weight:900;
+      text-shadow:none;
+    }
+
+    h1{margin:0; font-size:18px; letter-spacing:.2px}
+    .sub{margin:0; color:var(--muted); font-size:13px; line-height:1.25}
+
+    .hud{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .pill{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 10px;
+      background: rgba(18,33,74,.7);
+      border: var(--stroke) solid rgba(255,255,255,.16);
+      border-radius: 999px;
+      box-shadow: 0 10px 22px rgba(0,0,0,.22);
+    }
+    .pill b{font-size:14px}
+
+    .hearts{display:flex; gap:6px; align-items:center}
+    .heart{
+      width:18px; height:18px;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,.25));
+    }
+
+    .btn{
+      cursor:pointer;
+      border: var(--stroke) solid rgba(255,255,255,.22);
+      background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.06));
+      color:var(--ink);
+      padding:10px 12px;
+      border-radius: 14px;
+      font-weight:800;
+      letter-spacing:.2px;
+      box-shadow: 0 12px 26px rgba(0,0,0,.25);
+      transition: transform .08s ease, filter .12s ease;
+      user-select:none;
+    }
+    .btn:active{transform: translateY(2px) scale(.99)}
+    .btn.primary{
+      background: linear-gradient(180deg, rgba(255,207,74,.95), rgba(255,153,74,.9));
+      color:#10204a;
+      border-color: rgba(255,255,255,.30);
+    }
+    .btn.ghost{background: rgba(18,33,74,.45)}
+
+    main{
+      margin-top:16px;
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap:14px;
+      align-items:start;
+    }
+
+    @media (max-width: 980px){
+      main{grid-template-columns:1fr;}
+    }
+
+    .panel{
+      background: rgba(15,26,53,.58);
+      border: var(--stroke) solid rgba(255,255,255,.16);
+      border-radius: calc(var(--radius) + 6px);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      overflow:hidden;
+    }
+
+    .panelHeader{
+      padding:12px 14px;
+      border-bottom: var(--stroke) solid rgba(255,255,255,.12);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .panelHeader h2{margin:0; font-size:16px}
+    .panelHeader .hint{color:var(--muted); font-size:13px}
+
+    .boardWrap{padding:14px}
+
+    .board{
+      width:min(520px, 100%);
+      aspect-ratio: 1/1;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:12px;
+      padding:12px;
+      background: rgba(18,33,74,.35);
+      border: var(--stroke) dashed rgba(255,255,255,.20);
+      border-radius: 24px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.22) inset;
+      position:relative;
+    }
+
+    .hole{
+      background: rgba(8,14,30,.65);
+      border: var(--stroke) solid rgba(255,255,255,.14);
+      border-radius: 22px;
+      position:relative;
+      overflow:hidden;
+      box-shadow: 0 14px 26px rgba(0,0,0,.28);
+      cursor: crosshair;
+      min-height: 120px;
+    }
+
+    .hole::after{
+      content:"";
+      position:absolute;
+      left:-30%; right:-30%;
+      bottom:-60%;
+      height:60%;
+      border-radius: 999px;
+      background: radial-gradient(circle at 50% 20%, rgba(255,255,255,.22), transparent 60%);
+      filter: blur(1px);
+      opacity:.55;
+      pointer-events:none;
+    }
+
+    /* The target */
+    .mole{
+      position:absolute;
+      left:50%;
+      bottom:-10px;
+      transform: translateX(-50%) translateY(120%);
+      width:78%;
+      max-width:140px;
+      aspect-ratio: 1/1;
+      border-radius: 28px;
+      background: linear-gradient(180deg, rgba(255,207,74,.95), rgba(255,120,150,.9));
+      border: var(--stroke) solid rgba(255,255,255,.35);
+      box-shadow: 0 14px 30px rgba(0,0,0,.33);
+      display:grid;
+      place-items:center;
+      transition: transform 160ms ease;
+      user-select:none;
+    }
+
+    .mole.up{ transform: translateX(-50%) translateY(0%); }
+
+    .moleFace{
+      width:88%;
+      height:88%;
+      border-radius: 24px;
+      background: rgba(255,255,255,.18);
+      border: var(--stroke) solid rgba(0,0,0,.18);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .eye{
+      position:absolute;
+      top:26%;
+      width:20%; height:20%;
+      border-radius: 999px;
+      background: rgba(12,20,40,.95);
+      box-shadow: 0 0 0 4px rgba(255,255,255,.5) inset;
+    }
+    .eye.left{left:18%}
+    .eye.right{right:18%}
+    .smile{
+      position:absolute;
+      left:50%;
+      top:58%;
+      width:52%;
+      height:30%;
+      border-radius: 0 0 999px 999px;
+      border: 5px solid rgba(12,20,40,.9);
+      border-top:0;
+      transform: translateX(-50%);
+      opacity:.9;
+    }
+
+    .spark{
+      position:absolute;
+      right:-18px;
+      top:-18px;
+      width:56px;
+      height:56px;
+      border-radius: 16px;
+      background: radial-gradient(circle at 35% 35%, rgba(255,255,255,.85), rgba(255,255,255,.2) 45%, transparent 70%);
+      transform: rotate(18deg);
+      opacity:.85;
+    }
+
+    .mole.hit{
+      animation: bonk .25s ease;
+    }
+    @keyframes bonk{
+      0%{transform: translateX(-50%) translateY(0%) rotate(0deg)}
+      40%{transform: translateX(-50%) translateY(0%) rotate(-8deg) scale(1.02)}
+      100%{transform: translateX(-50%) translateY(0%) rotate(0deg)}
+    }
+
+    /* Right side */
+    .taskBody{padding:14px}
+
+    .taskCard{
+      background: rgba(18,33,74,.55);
+      border: var(--stroke) solid rgba(255,255,255,.14);
+      border-radius: 22px;
+      padding:14px;
+      box-shadow: 0 14px 30px rgba(0,0,0,.25);
+    }
+
+    .taskTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+
+    .modeTag{
+      font-size:12px;
+      font-weight:900;
+      padding:6px 10px;
+      border-radius:999px;
+      background: rgba(124,247,195,.18);
+      border: var(--stroke) solid rgba(124,247,195,.35);
+      color: #dffcf0;
+    }
+
+    .words{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin:10px 0 6px;
+    }
+
+    .chip{
+      padding:6px 10px;
+      border-radius:999px;
+      border: var(--stroke) solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.08);
+      font-weight:800;
+      font-size:13px;
+    }
+
+    .sentence{
+      margin:10px 0;
+      font-size:18px;
+      line-height:1.35;
+      letter-spacing:.2px;
+      background: rgba(8,14,30,.35);
+      border: var(--stroke) dashed rgba(255,255,255,.22);
+      border-radius: 18px;
+      padding:12px;
+    }
+
+    .answerRow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top:10px;
+    }
+
+    .input{
+      flex:1 1 180px;
+      min-width: 160px;
+      padding:12px 12px;
+      border-radius: 14px;
+      border: var(--stroke) solid rgba(255,255,255,.18);
+      background: rgba(8,14,30,.55);
+      color: var(--ink);
+      font-weight:800;
+      font-size:16px;
+      outline:none;
+    }
+    .input::placeholder{color: rgba(207,226,255,.65)}
+
+    .feedback{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius: 16px;
+      border: var(--stroke) solid rgba(255,255,255,.14);
+      background: rgba(8,14,30,.45);
+      color: var(--muted);
+      min-height: 42px;
+    }
+    .feedback.good{border-color: rgba(124,247,195,.45); color:#dffcf0; background: rgba(124,247,195,.12)}
+    .feedback.bad{border-color: rgba(255,91,119,.55); color:#ffd7de; background: rgba(255,91,119,.12)}
+
+    .mini{
+      font-size:12px;
+      color: rgba(207,226,255,.72);
+      margin-top:10px;
+      line-height:1.35;
+    }
+
+    dialog{
+      border: none;
+      border-radius: 22px;
+      padding:0;
+      width: min(760px, 94vw);
+      box-shadow: 0 22px 70px rgba(0,0,0,.55);
+      background: rgba(18,33,74,.95);
+      color: var(--ink);
+    }
+    dialog::backdrop{background: rgba(0,0,0,.55)}
+
+    .modalHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:12px 14px;
+      border-bottom: var(--stroke) solid rgba(255,255,255,.14);
+    }
+    .modalHead h3{margin:0; font-size:16px}
+
+    .modalBody{padding:14px}
+
+    .reveal{
+      border-radius: 22px;
+      border: var(--stroke) solid rgba(255,255,255,.18);
+      background: rgba(8,14,30,.45);
+      padding:12px;
+      display:grid;
+      gap:10px;
+    }
+
+    .imgWrap{
+      width:100%;
+      aspect-ratio: 16/10;
+      border-radius: 18px;
+      overflow:hidden;
+      border: var(--stroke) solid rgba(255,255,255,.18);
+      background: radial-gradient(circle at 30% 30%, rgba(255,207,74,.18), transparent 50%), rgba(0,0,0,.15);
+      display:grid;
+      place-items:center;
+    }
+
+    .imgWrap img{
+      max-width:100%;
+      max-height:100%;
+      object-fit:contain;
+      display:block;
+      filter: drop-shadow(0 16px 28px rgba(0,0,0,.35));
+    }
+
+    .revealText{
+      font-size:18px;
+      line-height:1.35;
+      background: rgba(255,255,255,.06);
+      border: var(--stroke) dashed rgba(255,255,255,.16);
+      border-radius: 18px;
+      padding:10px 12px;
+    }
+
+    .kbd{font-weight:900; padding:2px 6px; border-radius:8px; border:2px solid rgba(255,255,255,.25); background: rgba(0,0,0,.25)}
+
+    .sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="title" aria-label="Game title">
+        <div class="badge" aria-hidden="true">💥</div>
+        <div>
+          <h1>Whack-a-Character! — Describe Appearance</h1>
+          <p class="sub">Hit the target. Every <b>3 hits</b> unlocks a surprise: an <b>image</b> or a <b>fill-the-gap</b> task.</p>
+        </div>
+      </div>
+
+      <div class="hud" aria-label="Game HUD">
+        <div class="pill" title="Hits needed for surprise">
+          <span aria-hidden="true">🎯</span>
+          <div><span style="color:var(--muted); font-size:12px">Hits</span><br><b id="hits">0</b></div>
+        </div>
+        <div class="pill" title="Lives">
+          <span aria-hidden="true">❤️</span>
+          <div class="hearts" aria-label="Lives" id="hearts"></div>
+        </div>
+        <button class="btn primary" id="startBtn">Start</button>
+        <button class="btn ghost" id="resetBtn" title="Restart">Restart</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel" aria-label="Whack-a-mole board">
+        <div class="panelHeader">
+          <h2>Board</h2>
+          <div class="hint">Click / tap the target fast! Misses cost a life.</div>
+        </div>
+        <div class="boardWrap">
+          <div class="board" id="board" aria-label="3 by 3 holes"></div>
+          <p class="mini" style="text-align:center; margin:12px 0 0">
+            Tip: you can also press <span class="kbd">Space</span> to pause/resume.
+          </p>
+        </div>
+      </section>
+
+      <aside class="panel" aria-label="Task panel">
+        <div class="panelHeader">
+          <h2>Task</h2>
+          <div class="hint">Use these words:</div>
+        </div>
+        <div class="taskBody">
+          <div class="taskCard">
+            <div class="taskTop">
+              <div class="modeTag" id="modeTag">Waiting…</div>
+              <button class="btn ghost" id="helpBtn" aria-haspopup="dialog">Help</button>
+            </div>
+
+            <div class="words" id="wordChips" aria-label="Word bank"></div>
+
+            <div class="sentence" id="sentence" aria-live="polite">
+              Press <b>Start</b> to play. When you get <b>3 hits</b>, you’ll unlock a surprise.
+            </div>
+
+            <div class="answerRow">
+              <label class="sr-only" for="answer">Answer</label>
+              <input class="input" id="answer" autocomplete="off" placeholder="Type one word…" />
+              <button class="btn primary" id="checkBtn">Check</button>
+              <button class="btn" id="skipBtn" title="Skip task (no penalty)">New task</button>
+            </div>
+
+            <div class="feedback" id="feedback" aria-live="polite">
+              When a task appears, type the missing word (e.g., <b>beard</b>) and click <b>Check</b>.
+            </div>
+
+            <p class="mini">
+              Teacher note: Put <b>1.png … 5.png</b> next to <b>numbers.html</b> in your GitHub repo.
+              Images are shown randomly as a reward.
+            </p>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <dialog id="modal">
+    <div class="modalHead">
+      <h3 id="modalTitle">Surprise!</h3>
+      <button class="btn" id="closeModal">Close (Esc)</button>
+    </div>
+    <div class="modalBody">
+      <div class="reveal">
+        <div class="imgWrap" id="imgWrap">
+          <img id="revealImg" alt="Surprise image" />
+        </div>
+        <div class="revealText" id="revealText"></div>
+      </div>
+      <p class="mini">Keep playing: every <b>3 hits</b> → new surprise.</p>
+    </div>
+  </dialog>
+
+  <dialog id="helpDialog">
+    <div class="modalHead">
+      <h3>How to play</h3>
+      <button class="btn" id="closeHelp">Close</button>
+    </div>
+    <div class="modalBody">
+      <div class="revealText">
+        <ul style="margin:0; padding-left:18px; line-height:1.5">
+          <li>Click / tap the target when it pops up.</li>
+          <li>If you click a hole with <b>no</b> target → you lose <b>1 life</b>.</li>
+          <li>You have <b>3 lives</b>.</li>
+          <li>Every <b>3 hits</b> you unlock a <b>picture</b> or a <b>fill-the-gap</b> task.</li>
+          <li>For tasks: type the missing word (from the word bank) and click <b>Check</b>.</li>
+        </ul>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    // ================================
+    //  SETTINGS (teacher can edit)
+    // ================================
+
+    // Put these files in the same folder as numbers.html:
+    const REWARD_IMAGES = ["1.png","2.png","3.png","4.png","5.png"]; // required by the user
+
+    const WORD_BANK = [
+      "beard",
+      "moustache",
+      "fat",
+      "tall",
+      "short",
+      "slim",
+      "well-built",
+      "ears",
+      "eyes"
+    ];
+
+    // Fill-the-gap tasks about well-known cartoon characters (no names required).
+    // Each task has {sentence, answer} where answer must be in WORD_BANK.
+    const TASKS = [
+      { sentence: "He is very ____ and strong. He looks like a hero.", answer: "well-built" },
+      { sentence: "She is ____ and elegant. She is not fat.", answer: "slim" },
+      { sentence: "This character is ____ — taller than everyone in the room.", answer: "tall" },
+      { sentence: "He is ____ — he can’t reach the top shelf.", answer: "short" },
+      { sentence: "He has a big ____ on his face. It’s under his nose.", answer: "moustache" },
+      { sentence: "He has a long ____ — it covers his chin.", answer: "beard" },
+      { sentence: "He is a bit ____ because he eats too many donuts.", answer: "fat" },
+      { sentence: "Look at his ____! They are huge and pointy.", answer: "ears" },
+      { sentence: "Her ____ are bright and big like stars.", answer: "eyes" },
+      { sentence: "He is ____ and fast. He can run quickly.", answer: "slim" },
+      { sentence: "He is ____ and towers over his friends.", answer: "tall" },
+    ];
+
+    // ================================
+    //  GAME STATE
+    // ================================
+    const board = document.getElementById('board');
+    const hitsEl = document.getElementById('hits');
+    const heartsEl = document.getElementById('hearts');
+
+    const startBtn = document.getElementById('startBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    const wordChips = document.getElementById('wordChips');
+    const sentenceEl = document.getElementById('sentence');
+    const answerEl = document.getElementById('answer');
+    const feedbackEl = document.getElementById('feedback');
+    const modeTag = document.getElementById('modeTag');
+
+    const checkBtn = document.getElementById('checkBtn');
+    const skipBtn = document.getElementById('skipBtn');
+
+    const modal = document.getElementById('modal');
+    const closeModal = document.getElementById('closeModal');
+    const revealImg = document.getElementById('revealImg');
+    const revealText = document.getElementById('revealText');
+    const imgWrap = document.getElementById('imgWrap');
+
+    const helpDialog = document.getElementById('helpDialog');
+    const helpBtn = document.getElementById('helpBtn');
+    const closeHelp = document.getElementById('closeHelp');
+
+    let running = false;
+    let paused = false;
+    let lives = 3;
+    let hits = 0;
+    let currentUpIndex = -1;
+    let popTimer = null;
+
+    // surprise system
+    let hitsSinceSurprise = 0;
+    let currentTask = null;
+
+    // ================================
+    //  UI INIT
+    // ================================
+    function renderHearts(){
+      heartsEl.innerHTML = '';
+      for(let i=0;i<lives;i++){
+        const span = document.createElement('span');
+        span.className = 'heart';
+        span.textContent = '❤️';
+        heartsEl.appendChild(span);
+      }
+      if(lives === 0){
+        const span = document.createElement('span');
+        span.style.opacity = .8;
+        span.textContent = '💀';
+        heartsEl.appendChild(span);
+      }
+    }
+
+    function renderWordBank(){
+      wordChips.innerHTML = '';
+      WORD_BANK.forEach(w=>{
+        const chip = document.createElement('span');
+        chip.className = 'chip';
+        chip.textContent = w;
+        wordChips.appendChild(chip);
+      });
+    }
+
+    renderHearts();
+    renderWordBank();
+
+    // Create 9 holes
+    const holes = [];
+    for(let i=0;i<9;i++){
+      const hole = document.createElement('button');
+      hole.type = 'button';
+      hole.className = 'hole';
+      hole.setAttribute('aria-label', `Hole ${i+1}`);
+
+      const mole = document.createElement('div');
+      mole.className = 'mole';
+      mole.innerHTML = `
+        <div class="moleFace" aria-hidden="true">
+          <div class="spark"></div>
+          <div class="eye left"></div>
+          <div class="eye right"></div>
+          <div class="smile"></div>
+        </div>
+      `;
+
+      hole.appendChild(mole);
+      board.appendChild(hole);
+      holes.push({hole, mole});
+
+      hole.addEventListener('click', ()=> onHoleClick(i));
+      hole.addEventListener('pointerdown', ()=> hole.focus({preventScroll:true}));
+    }
+
+    // ================================
+    //  GAME LOGIC
+    // ================================
+
+    function setFeedback(type, html){
+      feedbackEl.classList.remove('good','bad');
+      if(type) feedbackEl.classList.add(type);
+      feedbackEl.innerHTML = html;
+    }
+
+    function setMode(text){
+      modeTag.textContent = text;
+    }
+
+    function startGame(){
+      if(running) return;
+      running = true;
+      paused = false;
+      lives = 3;
+      hits = 0;
+      hitsSinceSurprise = 0;
+      currentTask = null;
+      hitsEl.textContent = hits;
+      renderHearts();
+      setMode('Playing!');
+      sentenceEl.innerHTML = 'Hit the target! Every <b>3 hits</b> → surprise.';
+      setFeedback('', 'Aim carefully: clicking an empty hole costs <b>1 life</b>.');
+      answerEl.value = '';
+      popLoop();
+    }
+
+    function resetGame(){
+      stopLoop();
+      running = false;
+      paused = false;
+      lives = 3;
+      hits = 0;
+      hitsSinceSurprise = 0;
+      currentTask = null;
+      hitsEl.textContent = hits;
+      renderHearts();
+      setMode('Waiting…');
+      sentenceEl.innerHTML = 'Press <b>Start</b> to play. When you get <b>3 hits</b>, you’ll unlock a surprise.';
+      setFeedback('', 'When a task appears, type the missing word and click <b>Check</b>.');
+      answerEl.value = '';
+      hideAll();
+    }
+
+    function stopLoop(){
+      if(popTimer) clearTimeout(popTimer);
+      popTimer = null;
+      hideAll();
+      currentUpIndex = -1;
+    }
+
+    function hideAll(){
+      holes.forEach(h=> h.mole.classList.remove('up'));
+    }
+
+    function popLoop(){
+      if(!running) return;
+      if(paused){
+        popTimer = setTimeout(popLoop, 200);
+        return;
+      }
+
+      // Hide previous
+      if(currentUpIndex >= 0) holes[currentUpIndex].mole.classList.remove('up');
+
+      // Choose a new hole
+      const next = pickNextIndex();
+      currentUpIndex = next;
+      holes[next].mole.classList.add('up');
+
+      // Random timing
+      const upTime = randInt(650, 1050);
+      popTimer = setTimeout(()=>{
+        // Hide
+        holes[next].mole.classList.remove('up');
+        currentUpIndex = -1;
+
+        const downTime = randInt(180, 360);
+        popTimer = setTimeout(popLoop, downTime);
+      }, upTime);
+    }
+
+    function pickNextIndex(){
+      let i = randInt(0, 8);
+      if(i === currentUpIndex) i = (i + 1 + randInt(0,7)) % 9;
+      return i;
+    }
+
+    function onHoleClick(i){
+      if(!running || paused) return;
+
+      const isHit = (i === currentUpIndex);
+      if(isHit){
+        hits++;
+        hitsSinceSurprise++;
+        hitsEl.textContent = hits;
+
+        const mole = holes[i].mole;
+        mole.classList.add('hit');
+        setTimeout(()=>mole.classList.remove('hit'), 260);
+
+        // Immediately drop target after a hit (feels snappy)
+        mole.classList.remove('up');
+        currentUpIndex = -1;
+
+        setFeedback('good', `Nice! 🎯 Total hits: <b>${hits}</b>. (${3 - (hitsSinceSurprise % 3 || 3)} to surprise)`);
+
+        if(hitsSinceSurprise >= 3){
+          hitsSinceSurprise = 0;
+          unlockSurprise();
+        }
+      } else {
+        lives = Math.max(0, lives - 1);
+        renderHearts();
+        setFeedback('bad', `Oops — empty hole! You lost <b>1 life</b>. Lives left: <b>${lives}</b>.`);
+        if(lives === 0){
+          gameOver();
+        }
+      }
+    }
+
+    function gameOver(){
+      stopLoop();
+      running = false;
+      setMode('Game Over');
+      sentenceEl.innerHTML = 'Game over 💀 Press <b>Restart</b> to try again.';
+      setFeedback('bad', 'Want a tip? Wait until the target is fully up — then BONK!');
+    }
+
+    // ================================
+    //  SURPRISES (Image OR Task)
+    // ================================
+
+    function unlockSurprise(){
+      // 50/50 image vs task
+      const showImage = Math.random() < 0.5;
+      if(showImage){
+        revealImage();
+      } else {
+        showTask();
+      }
+    }
+
+    function revealImage(){
+      const file = REWARD_IMAGES[randInt(0, REWARD_IMAGES.length - 1)];
+      revealImg.src = file;
+      revealImg.alt = `Reward image ${file}`;
+      imgWrap.style.display = 'grid';
+      revealText.innerHTML = `Picture reward: <b>${file}</b> 🎉<br>Describe it in 2–3 sentences (hair, eyes, body).`;
+      document.getElementById('modalTitle').textContent = 'Picture! Describe it ✨';
+      openModal();
+
+      // Also show a quick prompt in the side panel
+      setMode('Picture mode');
+      sentenceEl.innerHTML = `Describe the picture (<b>${file}</b>). Try: "He/She has…" "He/She is…"`;
+      setFeedback('', 'You can keep playing while you describe (or pause with Space).');
+      currentTask = null;
+    }
+
+    function showTask(){
+      const t = TASKS[randInt(0, TASKS.length - 1)];
+      currentTask = t;
+      setMode('Fill-the-gap');
+      sentenceEl.textContent = t.sentence.replace('____', '____');
+      setFeedback('', 'Type the missing word from the word bank, then click Check.');
+      answerEl.value = '';
+      answerEl.focus({preventScroll:true});
+
+      // show mini modal too (fun reward)
+      imgWrap.style.display = 'none';
+      revealText.innerHTML = `Task reward! ✍️<br><br><b>${escapeHtml(t.sentence).replace('____','____')}</b><br><br>Word bank: ${WORD_BANK.map(w=>`<b>${w}</b>`).join(', ')}`;
+      document.getElementById('modalTitle').textContent = 'Task! Fill the gap 🧩';
+      openModal();
+    }
+
+    function openModal(){
+      if(typeof modal.showModal === 'function'){
+        modal.showModal();
+      } else {
+        // fallback
+        modal.setAttribute('open','');
+      }
+    }
+
+    function closeModalSafe(){
+      try{ modal.close(); } catch(e){ modal.removeAttribute('open'); }
+    }
+
+    // ================================
+    //  TASK CHECKING
+    // ================================
+
+    function checkAnswer(){
+      if(!currentTask){
+        setFeedback('', 'No active task right now. Get <b>3 hits</b> to unlock one!');
+        return;
+      }
+      const user = (answerEl.value || '').trim().toLowerCase();
+      const correct = currentTask.answer.toLowerCase();
+      if(user === correct){
+        setFeedback('good', `Correct! ✅ The missing word is <b>${currentTask.answer}</b>. Now describe the character in 2 sentences.`);
+        // Clear current task after correct
+        currentTask = null;
+        setMode('Playing!');
+        sentenceEl.innerHTML = 'Back to the board — hit the target!';
+        answerEl.value = '';
+      } else {
+        setFeedback('bad', `Not quite. Try again. Hint: look at the word bank. (${user ? `You typed <b>${escapeHtml(user)}</b>.` : 'Type a word.'})`);
+      }
+    }
+
+    function newTask(){
+      currentTask = null;
+      setMode(running ? 'Playing!' : 'Waiting…');
+      sentenceEl.innerHTML = running
+        ? 'Hit the target! Every <b>3 hits</b> → surprise.'
+        : 'Press <b>Start</b> to play.';
+      setFeedback('', 'Get 3 hits to unlock a new surprise.');
+      answerEl.value = '';
+    }
+
+    // ================================
+    //  EVENTS
+    // ================================
+
+    startBtn.addEventListener('click', startGame);
+    resetBtn.addEventListener('click', resetGame);
+    checkBtn.addEventListener('click', checkAnswer);
+    skipBtn.addEventListener('click', newTask);
+
+    answerEl.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter') checkAnswer();
+    });
+
+    closeModal.addEventListener('click', closeModalSafe);
+    modal.addEventListener('click', (e)=>{
+      // click outside content closes
+      const rect = modal.getBoundingClientRect();
+      const inside = (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom);
+      if(!inside) closeModalSafe();
+    });
+
+    helpBtn.addEventListener('click', ()=>{
+      if(typeof helpDialog.showModal === 'function') helpDialog.showModal();
+      else helpDialog.setAttribute('open','');
+    });
+    closeHelp.addEventListener('click', ()=>{ try{helpDialog.close();}catch(e){helpDialog.removeAttribute('open');} });
+
+    window.addEventListener('keydown', (e)=>{
+      if(e.key === 'Escape'){
+        if(modal.open) closeModalSafe();
+        if(helpDialog.open) { try{helpDialog.close();}catch(_){helpDialog.removeAttribute('open');} }
+      }
+      if(e.code === 'Space'){
+        if(!running) return;
+        paused = !paused;
+        setMode(paused ? 'Paused' : (running ? 'Playing!' : 'Waiting…'));
+        setFeedback('', paused ? 'Paused. Press Space to continue.' : 'Go go go!');
+        e.preventDefault();
+      }
+    });
+
+    // ================================
+    //  HELPERS
+    // ================================
+    function randInt(min, max){
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'",'&#39;');
+    }
+
+    // Start in reset state
+    resetGame();
+  </script>
+</body>
+</html>
