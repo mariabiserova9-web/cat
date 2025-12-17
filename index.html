@@ -365,7 +365,47 @@
       background: rgba(0,0,0,.55);
       backdrop-filter: blur(3px);
     }
-    .modal-head{
+    
+    /* Fullscreen game modal (so embedded games open big) */
+    #gameModal{
+      width:100vw;
+      height:100vh;
+      max-width:none;
+      margin:0;
+      border-radius:0;
+    }
+    #gameModal .modal-body{
+      height: calc(100vh - 54px); /* header height */
+      display:flex;
+      flex-direction:column;
+    }
+    #gameModal .frame-wrap{
+      flex:1 1 auto;
+      min-height:0;
+      height:auto;
+      border-radius: 14px;
+    }
+    #gameModal iframe{
+      height:100%;
+      min-height: 240px;
+    }
+
+    /* Minimized state (bottom-right) */
+    #gameModal.minimized{
+      width: 380px;
+      height: 240px;
+      border-radius: 18px;
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+    }
+    #gameModal.minimized .modal-body{
+      height: calc(240px - 54px);
+    }
+    #gameModal.minimized .frame-wrap{
+      display:none; /* hide the game while minimized */
+    }
+.modal-head{
       display:flex;
       align-items:center;
       justify-content:space-between;
@@ -646,7 +686,7 @@
             <p class="modal-note" id="endHint" style="margin-top:10px;display:none;">
               If this tab doesn’t close automatically, just close it manually.
             </p>
-          </div>
+</div>
         </div>
 
       </section>
@@ -657,7 +697,10 @@
   <dialog id="gameModal" aria-labelledby="modalTitle">
     <div class="modal-head">
       <h3 class="modal-title" id="modalTitle">Activity</h3>
-      <button class="modal-close" id="modalClose" type="button">Close</button>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="modal-close" id="modalMinimize" type="button" aria-pressed="false">Minimize</button>
+        <button class="modal-close" id="modalClose" type="button">Close</button>
+      </div>
     </div>
     <div class="modal-body">
       <p class="modal-note" id="modalNote">
@@ -729,8 +772,7 @@
       tablet: { visited:false, attempted:false, completed:false, score:0, updatedAt:null },
       play:   { visited:false, attempted:false, updatedAt:null }
     });
-
-    function loadState() {
+function loadState() {
       try {
         const raw = localStorage.getItem(CONFIG.storageKey);
         if (!raw) return defaultState();
@@ -796,6 +838,7 @@
       modalTitle: document.getElementById("modalTitle"),
       modalNote: document.getElementById("modalNote"),
       modalClose: document.getElementById("modalClose"),
+      modalMinimize: document.getElementById("modalMinimize"),
       gameFrame: document.getElementById("gameFrame"),
 
       screenBad: document.getElementById("screenBad"),
@@ -845,25 +888,23 @@
      */
     function requirements() {
       const req = [];
-      if (!(state.board.completed && state.board.score === 100)) req.push("Get 100/100 on Work at the board.");
-      if (!(state.tablet.completed && state.tablet.score === 100)) req.push("Get 100/100 on Work on the tablet.");
+      if (!state.board.completed) req.push("Play Work at the board.");
+      if (!state.tablet.completed) req.push("Play Work on the tablet.");
       if (!state.play.visited) req.push("Visit Play on the phone at least once.");
       return req;
     }
-
-    function canLeave() {
+function canLeave() {
       return requirements().length === 0;
     }
 
     function activityDoneCount() {
       let done = 0;
-      if (state.board.completed && state.board.score === 100) done++;
-      if (state.tablet.completed && state.tablet.score === 100) done++;
+      if (state.board.completed) done++;
+      if (state.tablet.completed) done++;
       if (state.play.visited) done++;
       return done;
     }
-
-    /**
+/**
      * =========================
      * UI UPDATE
      * =========================
@@ -876,29 +917,27 @@
 
     function applyUI() {
       // Board status
-      if (!state.board.visited) {
+      if (!state.board.attempted) {
         el.subBoard.textContent = "Not started";
         setBadge(el.badgeBoard, "Not started", "warn");
-      } else if (state.board.score === 100 && state.board.completed) {
-        el.subBoard.textContent = "100/100 — Done";
-        setBadge(el.badgeBoard, "100/100 Done", "ok");
+      } else if (state.board.completed) {
+        el.subBoard.textContent = "Done ✅";
+        setBadge(el.badgeBoard, "Done", "ok");
       } else {
-        const bScore = state.board.score || 0;
-        el.subBoard.textContent = `Attempt used — ${bScore}/100`;
-        setBadge(el.badgeBoard, `Attempt used (${bScore}/100)`, "bad");
+        el.subBoard.textContent = "In progress…";
+        setBadge(el.badgeBoard, "In progress", "warn");
       }
 
       // Tablet status
-      if (!state.tablet.visited) {
+      if (!state.tablet.attempted) {
         el.subTablet.textContent = "Not started";
         setBadge(el.badgeTablet, "Not started", "warn");
-      } else if (state.tablet.score === 100 && state.tablet.completed) {
-        el.subTablet.textContent = "100/100 — Done";
-        setBadge(el.badgeTablet, "100/100 Done", "ok");
+      } else if (state.tablet.completed) {
+        el.subTablet.textContent = "Done ✅";
+        setBadge(el.badgeTablet, "Done", "ok");
       } else {
-        const tScore = state.tablet.score || 0;
-        el.subTablet.textContent = `Attempt used — ${tScore}/100`;
-        setBadge(el.badgeTablet, `Attempt used (${tScore}/100)`, "bad");
+        el.subTablet.textContent = "In progress…";
+        setBadge(el.badgeTablet, "In progress", "warn");
       }
 
       // Play status
@@ -906,8 +945,8 @@
         el.subPlay.textContent = "Not visited";
         setBadge(el.badgePlay, "Not visited", "warn");
       } else {
-        el.subPlay.textContent = "Visited";
-        setBadge(el.badgePlay, "Visited", "ok");
+        el.subPlay.textContent = "Done ✅";
+        setBadge(el.badgePlay, "Done", "ok");
       }
 
       // Only one attempt per activity: lock after the first open (attempted)
@@ -926,7 +965,7 @@
       const req = requirements();
       el.footerReq.textContent = req.length ? ` Remaining: ${req.length}` : " All done!";
       el.kpiHint.textContent = req.length
-        ? "Tip: Complete Board & Tablet with 100/100, and visit Play once."
+        ? "Tip: Open each activity once to finish it."
         : "Nice! Now you can leave the classroom.";
 
       saveState(); // ensure consistency
@@ -991,8 +1030,7 @@
 
       currentActivity = activity;
 
-      // Mark visited / attempted
-
+      // Mark visited / attempted (only once per browser)
       if (activity === "board") {
         state.board.visited = true;
         state.board.attempted = true;
@@ -1002,14 +1040,12 @@
         state.tablet.attempted = true;
         state.tablet.updatedAt = Date.now();
       } else if (activity === "play") {
-        state.play.visited = true;
         state.play.attempted = true;
         state.play.updatedAt = Date.now();
       }
       saveState();
       applyUI();
-
-      // Title and note
+// Title and note
       const titleMap = {
         board: "Work at the board",
         tablet:"Work on the tablet",
@@ -1047,19 +1083,53 @@
 
     el.modalClose.addEventListener("click", closeModal);
 
+    // Minimize / Restore game modal
+    el.modalMinimize.addEventListener("click", () => {
+      const minimized = el.gameModal.classList.toggle("minimized");
+      el.modalMinimize.textContent = minimized ? "Restore" : "Minimize";
+      el.modalMinimize.setAttribute("aria-pressed", minimized ? "true" : "false");
+      // The iframe keeps running; we just hide it via CSS.
+    });
+
+
     // ESC closes dialog by default; also ensure iframe is cleared.
     el.gameModal.addEventListener("close", () => {
-      const act = currentActivity;
+      // Mark success just by playing (opening) once.
+      // When the modal closes, we finalize the activity as completed.
+      const finished = currentActivity;
+
+      if (finished === "board" && state.board.attempted && !state.board.completed) {
+        state.board.completed = true;
+        state.board.score = 100;
+        state.board.updatedAt = Date.now();
+        showMsg("Kudos! 😺🎉", "Kudos, you did it!");
+      }
+      if (finished === "tablet" && state.tablet.attempted && !state.tablet.completed) {
+        state.tablet.completed = true;
+        state.tablet.score = 100;
+        state.tablet.updatedAt = Date.now();
+        showMsg("Kudos! 😺🎉", "Kudos, you did it!");
+      }
+      if (finished === "play" && state.play.attempted && !state.play.visited) {
+        state.play.visited = true;
+        state.play.updatedAt = Date.now();
+        showMsg("Kudos! 😺🎉", "Kudos, you did it!");
+      }
+
+      saveState();
+      applyUI();
+
+      // Cleanup iframe
       el.gameFrame.src = "";
       currentActivity = null;
 
-      // For Play activity we treat "visited once" as success.
-      if (act === "play" && state.play.attempted) {
-        showMsg("Kudos! 😺🎉", "Kudos, you did it!");
-      }
+      // Reset minimized state for next open
+      el.gameModal.classList.remove("minimized");
+      el.modalMinimize.textContent = "Minimize";
+      el.modalMinimize.setAttribute("aria-pressed", "false");
     });
 
-    // Handle dialog cancel (Esc)
+// Handle dialog cancel (Esc)
     el.gameModal.addEventListener("cancel", (e) => {
       // Allow close, but ensure cleanup.
       // No preventDefault here.
@@ -1210,11 +1280,9 @@
         saveState();
         applyUI();
 
-        if (score === 100 && completed) {
-          showMsg("Kudos! 😺🎉", "Kudos, you did it!");
-        } else {
-          showMsg("Oh no… 😿", "Sad, try again.");
-        }
+        // Any result counts as success (played once)
+        showMsg("Kudos! 😺🎉", "Kudos, you did it!");
+        closeModal();
         closeModal();
       }
     });
@@ -1244,6 +1312,16 @@
 
     /**
      * =========================
+    // End the game (attempt to close the tab)
+    document.addEventListener("click", (e) => {
+      if (e.target && e.target.id === "btnEndGame") {
+        window.close();
+        const hint = document.getElementById("endHint");
+        if (hint) hint.style.display = "block";
+      }
+    });
+
+
      * INITIALIZE
      * =========================
      */
