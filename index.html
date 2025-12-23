@@ -1075,10 +1075,9 @@ function canLeave() {
     }
 
     function closeModal() {
+      // IMPORTANT: do not clear currentActivity here.
+      // The "close" event uses it to mark completion.
       if (el.gameModal.open) el.gameModal.close();
-      // Clear iframe src on close (important!)
-      el.gameFrame.src = "";
-      currentActivity = null;
     }
 
     el.modalClose.addEventListener("click", closeModal);
